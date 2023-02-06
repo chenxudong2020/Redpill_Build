@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+[ -e config/DS920+/7.0.1-42218/config.json ] && sed -i 's/fe2a4648f76adeb65c3230632503ea36bbac64ee88b459eb9bfb5f3b8c8cebb3/b9b77846e0983f50496276bec6bcdfcfadd4c1f9f0db8ed2ca5766f131ddf97f/g' config/DS920+/7.0.1-42218/config.json
+[ -e config/DS920+/7.0.1-42218/config.json ] && sed -i 's/346b68f662b50f47d3ee6c2bc9de6302e4b60436142c24ee88b620c7afd1ba06/70e93678f3932c35c5e884f950e50b36f8dc6366f96dd9a454c8d47ecbaee5de/g' config/DS920+/7.0.1-42218/config.json
+[ -e config/DS920+/7.0.1-42218/config.json ] && sed -i 's/f7dd1317f24ec6b9bac839e37f66b59030218c7f97c06f73f1f54ed0f892c4aa/8607c34fff3a13c75dbc1a9c730de2b2cf649697d6244fd37047090d2e2ba897/g' config/DS920+/7.0.1-42218/config.json

@@ -1,0 +1,408 @@
+name: Build
+
+on:
+  issues:
+    types: [opened, reopened]
+  workflow_dispatch:
+    inputs:
+      body:
+        description: 'issuss body'
+        required: true
+        default: ''
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: DS920+
+            version: 7.0.1-42218
+            machine: Custom
+            user: chenxudong2020
+    steps:
+      - name: 检出项目文件
+        uses: actions/checkout@v3
+
+      - name: 创建issue comments
+        if: github.event_name == 'issues'
+        id: comment
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.mytoken }}
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            分析 title 和 body 内容 ..
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ----
+          emoji: heart
+      - name: Set up Ruby 3
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.2
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Init Env
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          sudo timedatectl set-timezone "Asia/Shanghai"
+          python -m pip install --upgrade pip setuptools
+      - name: Get Issues Info
+        if: github.event_name == 'issues'
+        id: get-issues
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // '<???>': 替换一次; '/<???>/g': 替换全局; '/<???>/gi': 替换全局并忽略大小写;
+            // \u0008 \b Backspace
+            // \u0009 \t Tab
+            // \u000A \n 换行符
+            // \u000B \v 垂直制表符
+            // \u000C \f 换页
+            // \u000D \r 回车
+            // \u0022 \" 双引号 (")
+            // \u0027 \' 单引号 (')
+            // \u005C \\ 反斜杠 (\)
+            // \u00A0    不间断空格
+            // \u2028    行分隔符
+            // \u2029    段落分隔符
+            // \uFEFF    字节顺序标记
+            var fs = require('fs'); // 引入fs模块
+            var issuenumber = ${{ toJSON(github.event.issue.number) }};
+            var issueauth = ${{ toJSON(github.event.issue.user.login) }};
+            var issuetitle = ${{ toJSON(github.event.issue.title) }};
+            var issuebody = ${{ toJSON(github.event.issue.body) }};
+            if (issuetitle != null) {
+                          issuetitle = issuetitle.replace(/\u000A|\u000D/g, "");  // 换行符,回车
+                        }
+
+                        if (issuebody != null) {
+                          // Backspace,Tab,垂直制表符,换页,回车,不间断空格,行分隔符,段落分隔符,字节顺序标记
+                          issuebody = issuebody.replace(/\u000A|\u0008|\u0009|\u000B|\u000C|\u000D|\u00A0|\u2028|\u2029|\uFEFF/g, "");
+
+                          // 容错
+                          issuebody = issuebody.replace(/：/g, ": ");
+                          issuebody = issuebody.replace(/，/g, ", ");
+                          issuebody = issuebody.replace(/“|”/g, "\"");
+                          fs.writeFileSync(`body#${issuenumber}.txt`, issuebody, { 'flag': 'w' }, (err) => { if (err) throw err; });
+
+                          var regex = /\`\`\`([\s\S]*?)\`\`\`/g;
+                          let options = issuebody.match(regex);
+                          if (options != null && options.length > 0) {
+                            fs.writeFileSync('customshell.sh', options[options.length-1].replace(/\`/g, ""), { 'flag': 'w' }, (err) => { if (err) throw err; });
+                            for(option in options) {
+                              console.log(options[option]);
+                              issuebody = issuebody.replace(options[option], "");
+                            }
+                          }
+                          // 换行符
+                          issuebody = issuebody.replace(/\u000A/g, "");
+                        }
+                        core.setOutput("issuenumber", JSON.stringify(issuenumber));
+                        core.setOutput("issueauth", JSON.stringify(issueauth));
+                        core.setOutput("issuetitle", JSON.stringify(issuetitle));
+                        core.setOutput("issuebody", JSON.stringify(issuebody));
+      - name: Set Issues Info
+        if: github.event_name == 'issues' && success()
+        run: |
+          echo issuenumber: '${{ steps.get-issues.outputs.issuenumber }}'
+          echo issueauth:   '${{ steps.get-issues.outputs.issueauth }}'
+          echo issuetitle:  '${{ steps.get-issues.outputs.issuetitle }}'
+          echo issuebody:   '${{ steps.get-issues.outputs.issuebody }}'
+          echo "issuenumber="${{ steps.get-issues.outputs.issuenumber }}"" >> $GITHUB_ENV
+          echo "issueauth="${{ steps.get-issues.outputs.issueauth }}"" >> $GITHUB_ENV
+          echo "issuetitle="${{ steps.get-issues.outputs.issuetitle }}"" >> $GITHUB_ENV
+          echo "issuebody="${{ steps.get-issues.outputs.issuebody }}"" >> $GITHUB_ENV
+      - name: Get Build Info
+        shell: python
+        run: |
+          import os, re, json, shutil, string, subprocess
+
+          def set_output(name, value):
+              subprocess.call(["echo '{}={}' >> $GITHUB_ENV".format(name, value)], shell=True)
+
+          if __name__ == '__main__':
+
+              extra_cmdline = ''
+              driver = ''
+              dts = ''
+              iscustom='true'
+
+              try:
+                  body = {}
+                  bodyOriginal = {}
+                  if '${{ github.event_name }}' == 'issues':
+                      if '${{ env.issuetitle }}'.lower().startswith('custom'):
+                          issues = 'true'
+                          bodyOriginal = json.loads('${{ env.issuebody }}')
+                      else:
+                          iscustom = 'false'
+                  else:
+                      bodyOriginal = json.loads('${{ inputs.body }}')
+
+                  for k, v in bodyOriginal.items():
+                    body[k.lower()] = v
+
+                  if len(body) == 0:
+                      iscustom = 'false'
+                      errinfo = 'body 错误, body is null'
+                  else:
+                      # l = lambda x: x.strip() if isinstance(x, str) else str(x)
+                      if 'extra_cmdline' in body: extra_cmdline = json.dumps(body['extra_cmdline']).strip()
+                      if 'driver' in body: driver = body['driver'].strip()
+                      if 'dts' in body: dts = body['dts'].strip()
+                      set_output('issues', issues)
+                      set_output('iscustom', iscustom)
+                      set_output('extra_cmdline', extra_cmdline)
+                      set_output('driver', driver)
+                      set_output('dts', dts)
+
+
+              except Exception as e:
+                  iscustom = 'false'
+                  errinfo = 'body 错误, 不符合JSON规范 {}.'.format(e)
+                  set_output('errinfo', errinfo)
+      - name: Echo Build Info
+        run: |
+          echo issues:            '${{ env.issues }}'
+          echo iscustom:            '${{ env.iscustom }}'
+          echo extra_cmdline:            '${{ env.extra_cmdline }}'
+          echo driver:            '${{ env.driver }}'
+          echo dts:            '${{ env.dts }}'
+      - name: Add Issues labels
+        if: env.issues == 'true' && env.iscustom == 'true'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.mytoken }}
+          issue-number: ${{ env.issuenumber }}
+          labels: 'custom'
+      - name: Update Comment Begin
+        if: env.issues == 'true' && env.iscustom == 'true'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-comment'
+          token: ${{ secrets.mytoken }}
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          update-mode: replace
+          body: |
+            ${{ env.issueauth }} 您好.
+            您自定义的 DS920+ 已开始构建. 请前往下面的 URL 查看详细信息.
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ----
+          emoji: heart
+      - name: Update Comment Error
+        if: env.issues == 'true' && env.iscustom == 'false'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-comment'
+          token: ${{ secrets.mytoken }}
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          update-mode: replace
+          body: |
+            ${{ env.issueauth }} 您好.
+            您自定义 DS920+ 所填写的信息有误, 无法触发编译, 请参考模板和错误提示对body进行修改并请重新触发编译(Close & Reopen).
+            `Error Info:`
+            `${{ env.errinfo }}`
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ----
+          emoji: confused
+      - name: Update Comment Invalid
+        if: env.issues == 'false'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-comment'
+          token: ${{ secrets.mytoken }}
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          update-mode: replace
+          body: |
+            ${{ env.issueauth }} 您好.
+            根据 title 和 body 内容的分析, 该 Issue 并非定制 DS920+编译. 将在管理员看到后会进行回复.
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ----
+          emoji: eyes
+      - name: Create Config File
+        if: env.iscustom == 'true'
+        shell: python
+        run: |
+          import os, json
+          if __name__ == '__main__':
+            config={
+                   "extra_cmdline": {
+                     "pid": "0x5567",
+                     "vid": "0x0781",
+                     "sn": "2040SBRD42CP2",
+                     "mac1": "001132CABFFF",
+                     "mac2": "001132CAC000",
+                     "mac3": "001132CAC000",
+                     "mac4": "001132CAC000",
+                     "netif_num": 4
+                   },
+                   "synoinfo": {
+                     "internalportcfg": "0xffff",
+                     "maxlanport": "7",
+                     "support_led_behavior_v2": "no",
+                     "support_led_brightness_adjustment": "no",
+                     "support_bde_internal_10g": "no",
+                     "support_disk_compatibility": "no",
+                     "support_memory_compatibility": "no"
+                   },
+                   "ramdisk_copy": {},
+                   "extensions": []
+                 }
+          if '${{ env.extra_cmdline }}' != '':  config["extra_cmdline"]=  json.loads('${{ env.extra_cmdline }}')
+
+          with open('user_config.json', 'w', encoding="utf-8") as f:  f.write(json.dumps(config, indent=4))
+      - name: 环境准备
+        run: |
+          sudo apt update
+          sudo apt-get install -y curl bspatch jq git
+          git clone https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
+          cp -f type.sh /home/runner/redpill-load
+          cp -f user_config.json /home/runner/redpill-load/ds920p_user_config.json
+          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+          cat user_config.json
+          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            # wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/main/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
+            wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpillprod/releases/redpill-4.4.180plus-geminilake.tgz
+            tar zxvf redpill-4.4.180plus-geminilake.tgz -C ./
+            mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
+
+
+      - name: 添加扩展驱动
+        run: |
+          cd /home/runner/redpill-load
+          ./ext-manager.sh add 'https://github.com/jumkey/redpill-load/raw/develop/redpill-misc/rpext-index.json'
+          ./ext-manager.sh add 'https://github.com/pocopico/redpill-load/raw/develop/redpill-acpid/rpext-index.json'
+          if [ -n "${{ env.driver }}" ]; then
+              driver=$(echo ${{ env.driver }} | awk '{gsub(/ /,"")}1')
+              drivers=(${driver//,/ })
+              for item in ${drivers[@]}
+              do
+                  echo "${item}"
+                  if [[ ${item} = http* ]]; then
+                    ./ext-manager.sh add "${item}"
+                  fi
+              done
+          fi
+
+      - name: 编译DTB
+        run: |
+          cd /home/runner/redpill-load
+           chkurl=${{ env.dts }}
+           if [ ${{ env.dts }} ]
+           then
+               HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
+               if [ ${HTTP_CODE} -ne 200 ]
+               then
+                           echo "不存在dts文件采用自动dtb补丁支持<=4盘"
+                           lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+                           ./ext-manager.sh add ${lkmext}/redpill-dtb/rpext-index.json
+                            platform=${{matrix.platform}}
+                            version=${{matrix.version}}
+                            synoplatform=$(echo ${platform,,} | sed 's/+/p/g')
+                            synoversion=$(echo ${version} | awk -F - '{print $2}')
+                            key=${synoplatform}"_"${synoversion}
+                            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                            echo ${key}
+                           ./ext-manager.sh _update_platform_exts ${key} pocopico.dtb
+               else
+                            echo "加载原DTB驱动"
+                           ./ext-manager.sh add https://raw.githubusercontent.com/pocopico/rp-ext/master/redpill-dtb-static/rpext-index.json
+                           echo "更新原DTB驱动"
+                           ./ext-manager.sh _update_platform_exts ds920p_42218 redpill-dtb-static
+                           echo "下载DTS文件"
+                            wget ${chkurl}
+                           chmod +x ./redpill-qjs-dtb/src/dtc
+                           echo "编译DTS为DTB"
+                           ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
+                           echo "cp ./ds920p.dtb /home/runner/redpill-load/custom/extensions/redpill-dtb-static/ds920p_42218/model_ds920p.dtb"
+                           dtbextfile="$(find custom -name model_ds920p.dtb)"
+                           echo "复制编译好的DTB文件 ./ds920p.dtb 到 ${dtbextfile} ..."
+                           sudo cp ./ds920p.dtb ${dtbextfile}
+               fi
+           else
+                 echo "不存在dts文件采用自动dtb补丁支持<=4盘"
+                 lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+                 ./ext-manager.sh add ${lkmext}/redpill-dtb/rpext-index.json
+                  platform=${{matrix.platform}}
+                  version=${{matrix.version}}
+                  synoplatform=$(echo ${platform,,} | sed 's/+/p/g')
+                  synoversion=$(echo ${version} | awk -F - '{print $2}')
+                  key=${synoplatform}"_"${synoversion}
+                  echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                  echo ${key}
+                 ./ext-manager.sh _update_platform_exts ${key} pocopico.dtb
+           fi
+
+      - name: 编译引导
+        run: |
+          cd /home/runner/redpill-load
+          # 容错
+          chmod +x type.sh && ./type.sh
+          sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+          cp -f /home/runner/redpill-load/ds920p_user_config.json /home/runner/redpill-load/images
+      - name: 上传固件GitHub
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+          name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
+          path: /home/runner/redpill-load/images
+      - name: 上传到WeTransfer
+        if: always()
+        run: |
+          curl -fsSL git.io/file-transfer | sh
+          ./transfer wet -s -p 16 --no-progress /home/runner/redpill-load/images 2>&1 | tee wetransfer.log
+          echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
+          echo "downloadurl="$(cat wetransfer.log | grep https)"" >> $GITHUB_ENV
+      - name: Update Comment End
+        if: env.issues == 'true' && env.iscustom == 'true'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-comment'
+          token: ${{ secrets.mytoken }}
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          update-mode: replace
+          body: |
+            ${{ env.issueauth }} 您好.
+            您自定义的 DS920+ 已开始构建完成. 请前往下面的 URL 查看详细信息.
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            通过如下链接快速下载：
+            ${{ env.downloadurl }}
+            ----
+          emoji: hooray
+      - name: Close Issues
+        if: env.issues == 'true' && env.iscustom == 'true' && success()
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          token: ${{ secrets.mytoken }}
+          issue-number: ${{ env.issuenumber }}
+
+      - name: Update Comment Fail
+        if: env.issues == 'true' && env.iscustom == 'true' && failure()
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-comment'
+          token: ${{ secrets.mytoken }}
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          update-mode: replace
+          body: |
+            ${{ env.issueauth }} 您好.
+            您自定义的 DS920+ 构建失败. 请前往下面的 URL 查看详细信息对body进行修改并请重新触发编译(Close & Reopen).
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ----
+            PS:
+            在Issues下评论 "delete builds" 即可删该Issues的所有历史编译记录.
+            >
+            ----
+          emoji: confused

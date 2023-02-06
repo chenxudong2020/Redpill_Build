@@ -1,0 +1,19 @@
+{
+    "extra_cmdline": {
+        "pid": "0x0001",
+        "vid": "0x46f4",
+        "sn": "1234XXX123",
+        "mac1": "XXYYXXYYXXYY"
+	"netif_num": 7
+    },
+    "synoinfo": {
+	"internalportcfg": "0xffff",
+	"maxlanport": "7",
+	"maxdisks": "36",
+	"support_bde_internal_10g": "no",
+	"support_disk_compatibility": "no",
+	"support_memory_compatibility": "no"
+    },
+    "ramdisk_copy": {},
+    "extensions": []
+}

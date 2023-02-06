@@ -1,0 +1,129 @@
+name: Build DS920+ 7.0.1-42218 For UNAS_NS402
+
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+    inputs:
+      clean_cache:
+        description: 'Clear caches'
+        required: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: 编译 "${{matrix.platform}} ${{matrix.version}} ${{matrix.machine}}"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: DS920+
+            version: 7.0.1-42218
+            machine: UNAS_NS402
+            user: chenxudong2020
+
+    steps:
+      - name: 检出项目文件
+        uses: actions/checkout@v3
+        
+      - name: 获取当前时间
+        id: date
+        run: |
+          echo "today=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+          echo "now=$(date +'%s')" >> $GITHUB_OUTPUT
+        
+      - name: 获取项目描述
+        id: desc
+        run: |
+          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/main/README.MD -O /home/runner/desc.txt
+          echo "description=$(cat /home/runner/desc.txt)" >> $GITHUB_OUTPUT
+        
+      - name: 环境准备
+        run: |
+          sudo apt update
+          sudo apt-get install -y curl bspatch jq git
+          git clone https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
+          cp -f type.sh /home/runner/redpill-load
+          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/main/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
+          # wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpillprod/releases/redpill-4.4.180plus-geminilake.tgz
+          # tar zxvf redpill-4.4.180plus-geminilake.tgz -C ./
+          # mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
+          # 编译arpl使用的lkm
+           git clone --recursive https://github.com/fbelavenuto/redpill-lkm.git
+           cd ./redpill-lkm
+           ./compile-lkms.sh
+           cd ..
+           zip -9 lkm.zip -j ./redpill-lkm/output/*
+           mkdir lkmdir
+           unzip lkm.zip -d ./lkmdir
+           gunzip ./lkmdir/rp-geminilake-4.4.180-prod.ko.gz
+           mv ./lkmdir/rp-geminilake-4.4.180-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
+          
+      - name: 添加扩展驱动
+        run: |
+          cd /home/runner/redpill-load 
+          ./ext-manager.sh add 'https://github.com/jumkey/redpill-load/raw/develop/redpill-misc/rpext-index.json'
+          ./ext-manager.sh add 'https://github.com/pocopico/redpill-load/raw/develop/redpill-acpid/rpext-index.json'
+          ./ext-manager.sh add 'https://raw.githubusercontent.com/chenxudong2020/synology-r8125/main/r8125/rpext-index.json'
+          
+      - name: 编译DTB
+        run: |
+          cd /home/runner/redpill-load
+          # 容错
+          chmod +x type.sh && ./type.sh
+          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/main/dts/${{matrix.machine}}_ds920p.dts
+          HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
+          if [ ${HTTP_CODE} -ne 200 ]
+          then
+                      echo "不存在dts文件采用自动dtb补丁支持<=4盘"
+                      lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+                      ./ext-manager.sh add ${lkmext}/redpill-dtb/rpext-index.json
+                       platform=${{matrix.platform}}
+                       version=${{matrix.version}}
+                       synoplatform=$(echo ${platform,,} | sed 's/+/p/g')
+                       synoversion=$(echo ${version} | awk -F - '{print $2}')
+                       key=${synoplatform}"_"${synoversion}
+                       echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                       echo ${key}
+                      ./ext-manager.sh _update_platform_exts ${key} pocopico.dtb
+          else
+                       echo "加载原DTB驱动"
+                      ./ext-manager.sh add https://raw.githubusercontent.com/pocopico/rp-ext/master/redpill-dtb-static/rpext-index.json
+                      echo "更新原DTB驱动"
+                      ./ext-manager.sh _update_platform_exts ds920p_42218 redpill-dtb-static
+                      echo "下载DTS文件"
+                       wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/main/dts/${{matrix.machine}}_ds920p.dts
+                      chmod +x ./redpill-qjs-dtb/src/dtc
+                      echo "编译DTS为DTB"
+                      ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
+                      echo "cp ./ds920p.dtb /home/runner/redpill-load/custom/extensions/redpill-dtb-static/ds920p_42218/model_ds920p.dtb"
+                      dtbextfile="$(find custom -name model_ds920p.dtb)"
+                      echo "复制编译好的DTB文件 ./ds920p.dtb 到 ${dtbextfile} ..."
+                      sudo cp ./ds920p.dtb ${dtbextfile}
+          fi
+          
+      - name: 编译引导
+        run: |
+          cd /home/runner/redpill-load
+          sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+      - name: 上传固件GitHub
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+            name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
+            path: /home/runner/redpill-load/images
+      - name: 上传到cowtransfer
+        if: always()
+        run: |
+                curl -fsSL git.io/file-transfer | sh
+                ./transfer cow -s -p 64 --no-progress /home/runner/redpill-load/images 2>&1 | tee cowtransfer.log
+                echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
+      - name: 上传到WeTransfer
+        if: always()
+        run: |
+                curl -fsSL git.io/file-transfer | sh
+                ./transfer wet -s -p 16 --no-progress /home/runner/redpill-load/images 2>&1 | tee wetransfer.log
+                echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
+

@@ -1,0 +1,23 @@
+{
+  "extra_cmdline": {
+    "pid": "0x5567",
+    "vid": "0x0781",
+    "sn": "2040SBRD42CP2",
+    "mac1": "001132CABFFF",
+    "mac2": "001132CAC000",
+    "mac3": "001132CAC001",
+    "mac4": "001132CAC002",
+    "netif_num": 4
+  },
+  "synoinfo": {
+    "internalportcfg": "0xffff",
+    "maxlanport": "7",
+    "support_led_behavior_v2": "no",
+    "support_led_brightness_adjustment": "no",
+    "support_bde_internal_10g": "no",
+    "support_disk_compatibility": "no",
+    "support_memory_compatibility": "no"
+  },
+  "ramdisk_copy": {},
+  "extensions": []
+}
