@@ -124,122 +124,122 @@ jobs:
       - name: Get Build Info
         shell: python
         run: |
-          import os, re, json, shutil, string, subprocess
+    import os, re, json, shutil, string, subprocess
 
-          def set_output(name, value):
-              subprocess.call(["echo '{}={}' >> $GITHUB_ENV".format(name, value)], shell=True)
+    def set_output(name, value):
+      subprocess.call(["echo '{}={}' >> $GITHUB_ENV".format(name, value)], shell=True)
 
-          if __name__ == '__main__':
+    if __name__ == '__main__':
 
-              extra_cmdline = ''
-              driver = ''
-              dts = ''
-              iscustom='true'
+      extra_cmdline = ''
+      driver = ''
+      dts = ''
+      iscustom='true'
 
-              try:
-                  body = {}
-                  bodyOriginal = {}
-                  if '${{ github.event_name }}' == 'issues':
-                      if '${{ env.issuetitle }}'.lower().startswith('custom'):
-                          issues = 'true'
-                          bodyOriginal = json.loads('${{ env.issuebody }}')
-                      else:
-                          iscustom = 'false'
-                  else:
-                      bodyOriginal = json.loads('${{ inputs.body }}')
+      try:
+        body = {}
+        bodyOriginal = {}
+        if '${{ github.event_name }}' == 'issues':
+          if '${{ env.issuetitle }}'.lower().startswith('custom'):
+            issues = 'true'
+            bodyOriginal = json.loads('${{ env.issuebody }}')
+          else:
+            iscustom = 'false'
+        else:
+          bodyOriginal = json.loads('${{ inputs.body }}')
 
-                  for k, v in bodyOriginal.items():
-                    body[k.lower()] = v
+        for k, v in bodyOriginal.items():
+      body[k.lower()] = v
 
-                  if len(body) == 0:
-                      iscustom = 'false'
-                      errinfo = 'body 错误, body is null'
-                  else:
-                      # l = lambda x: x.strip() if isinstance(x, str) else str(x)
-                      if 'extra_cmdline' in body: extra_cmdline = json.dumps(body['extra_cmdline']).strip()
-                      if 'driver' in body: driver = body['driver'].strip()
-                      if 'dts' in body: dts = body['dts'].strip()
-                      if 'dts' in body: dtb = body['dts'].strip()
-                if iscustom == 'true' and dtb != '': # and dtb != 'auto':
-                  url = dtb
-                  try:
-                      try:
-                          import wget, filetype
-                      except ModuleNotFoundError:
-                          os.system('pip3 install wget filetype')
-                          import wget, filetype
+      if len(body) == 0:
+        iscustom = 'false'
+        errinfo = 'body 错误, body is null'
+      else:
+        # l = lambda x: x.strip() if isinstance(x, str) else str(x)
+        if 'extra_cmdline' in body: extra_cmdline = json.dumps(body['extra_cmdline']).strip()
+        if 'driver' in body: driver = body['driver'].strip()
+        if 'dts' in body: dts = body['dts'].strip()
+        if 'dts' in body: dtb = body['dts'].strip()
+    if iscustom == 'true' and dtb != '': # and dtb != 'auto':
+      url = dtb
+      try:
+        try:
+          import wget, filetype
+        except ModuleNotFoundError:
+          os.system('pip3 install wget filetype')
+          import wget, filetype
 
-                      res = wget.download(url)
-                      if res:
-                          down = res
-                          kind = filetype.guess(down)
-                          name = 'user'
-                          if os.path.exists('extract'):
-                              shutil.rmtree('extract')
-                          if kind != None and kind.extension == 'zip':
-                              import zipfile
-                              z = zipfile.ZipFile(down, 'r')
-                              z.extractall('extract')
-                          if kind != None and kind.extension in ['tar', 'gz']:
-                              import tarfile
-                              z = tarfile.open(down)
-                              z.extractall('extract')
-                          if os.path.exists('extract'):
-                              isfind = False
-                              for root, dirs, files in os.walk('extract'):
-                                  for file in files:
-                                      if file.endswith('.dts') or file.endswith('.dtb'):
-                                          isfind = True
-                                          down = name + os.path.splitext(file)[-1]
-                                          shutil.move(os.path.join(root, file), down)
-                                          break
-                                  if isfind is True:
-                                      break
-                          if os.path.exists(down) and (down.endswith('dts') or down.endswith('dtb')):
-                              if down.endswith('dts'):
-                                  wget.download('https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc')
-                                  if os.path.exists('dtc'):
-                                      print('./dtc -q -I dts -O dtb {} >{}.dtb'.format(down, name))
-                                      os.system('sudo chmod a+x dtc')
-                                      # os.system('sudo ./dtc -q -I dts -O dtb {} >{}.dtb'.format(down, name))
-                                      p = subprocess.Popen('sudo ./dtc -q -I dts -O dtb {} >{}.dtb'.format(down, name), shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                                      errinfo = p.stderr.read().decode('utf-8')
-                                      if os.path.exists('{}.dtb'.format(name)) and os.path.getsize('{}.dtb'.format(name)) > 0:
-                                          print('dtc ok ...')
-                                          dtb = os.path.abspath('{}.dtb'.format(name))
-                                      else:
-                                          iscustom = 'false'
-                                          errinfo = 'dtb 参数错误, dts文件内容存在错误 <{}>.'.format(errinfo.
-                                          lace('\r', '').replace('\n', ' '))
-                                  else:
-                                      iscustom = 'false'
-                                      errinfo = 'dtb 参数错误, 下载 dtc(dts->dtb tools) 失败, 可能是服务器压力过大, 请稍后重试, 或者直接使用 dtb 文件跳过转换.'
-                              else:
-                                  dtb = os.path.abspath(down)
-                          else:
-                              iscustom = 'false'
-                              errinfo = 'dtb 参数错误, 该url下载的文件不是所支持的格式.'
-                  except ValueError as e:
-                      iscustom = 'false'
-                      errinfo = 'dtb 参数错误, {}, 请填写 dts/dtb 文件有效的 http(s) 下载链接.'.format(e)
-                  except Exception as e:
-                      iscustom = 'false'
-                      errinfo = 'dtb 参数错误, {}, 请稍后重试.'.format(e)
-                  except Exception as e:
-                      iscustom = 'false'
-                      errinfo = 'dtb 参数错误, {}, 请稍后重试.'.format(e)
-                      set_output('issues', issues)
-                      set_output('iscustom', iscustom)
-                      set_output('extra_cmdline', extra_cmdline)
-                      set_output('driver', driver)
-                      set_output('dts', dts)
-                      set_output('dtb', dtb)
-
-
-              except Exception as e:
+        res = wget.download(url)
+        if res:
+          down = res
+          kind = filetype.guess(down)
+          name = 'user'
+          if os.path.exists('extract'):
+            shutil.rmtree('extract')
+          if kind != None and kind.extension == 'zip':
+            import zipfile
+            z = zipfile.ZipFile(down, 'r')
+            z.extractall('extract')
+          if kind != None and kind.extension in ['tar', 'gz']:
+            import tarfile
+            z = tarfile.open(down)
+            z.extractall('extract')
+          if os.path.exists('extract'):
+            isfind = False
+            for root, dirs, files in os.walk('extract'):
+              for file in files:
+                if file.endswith('.dts') or file.endswith('.dtb'):
+                  isfind = True
+                  down = name + os.path.splitext(file)[-1]
+                  shutil.move(os.path.join(root, file), down)
+                  break
+              if isfind is True:
+                break
+          if os.path.exists(down) and (down.endswith('dts') or down.endswith('dtb')):
+            if down.endswith('dts'):
+              wget.download('https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc')
+              if os.path.exists('dtc'):
+                print('./dtc -q -I dts -O dtb {} >{}.dtb'.format(down, name))
+                os.system('sudo chmod a+x dtc')
+                # os.system('sudo ./dtc -q -I dts -O dtb {} >{}.dtb'.format(down, name))
+                p = subprocess.Popen('sudo ./dtc -q -I dts -O dtb {} >{}.dtb'.format(down, name), shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                errinfo = p.stderr.read().decode('utf-8')
+                if os.path.exists('{}.dtb'.format(name)) and os.path.getsize('{}.dtb'.format(name)) > 0:
+                  print('dtc ok ...')
+                  dtb = os.path.abspath('{}.dtb'.format(name))
+                else:
                   iscustom = 'false'
-                  errinfo = 'body 错误, 不符合JSON规范 {}.'.format(e)
-                  set_output('errinfo', errinfo)
+                  errinfo = 'dtb 参数错误, dts文件内容存在错误 <{}>.'.format(errinfo.
+                  lace('\r', '').replace('\n', ' '))
+              else:
+                iscustom = 'false'
+                errinfo = 'dtb 参数错误, 下载 dtc(dts->dtb tools) 失败, 可能是服务器压力过大, 请稍后重试, 或者直接使用 dtb 文件跳过转换.'
+            else:
+              dtb = os.path.abspath(down)
+          else:
+            iscustom = 'false'
+            errinfo = 'dtb 参数错误, 该url下载的文件不是所支持的格式.'
+      except ValueError as e:
+        iscustom = 'false'
+        errinfo = 'dtb 参数错误, {}, 请填写 dts/dtb 文件有效的 http(s) 下载链接.'.format(e)
+      except Exception as e:
+        iscustom = 'false'
+        errinfo = 'dtb 参数错误, {}, 请稍后重试.'.format(e)
+      except Exception as e:
+        iscustom = 'false'
+        errinfo = 'dtb 参数错误, {}, 请稍后重试.'.format(e)
+        set_output('issues', issues)
+        set_output('iscustom', iscustom)
+        set_output('extra_cmdline', extra_cmdline)
+        set_output('driver', driver)
+        set_output('dts', dts)
+        set_output('dtb', dtb)
+
+
+      except Exception as e:
+          iscustom = 'false'
+            errinfo = 'body 错误, 不符合JSON规范 {}.'.format(e)
+            set_output('errinfo', errinfo)
       - name: Echo Build Info
         run: |
           echo issues:            '${{ env.issues }}'
