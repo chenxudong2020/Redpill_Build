@@ -159,8 +159,9 @@ jobs:
                       if 'extra_cmdline' in body: extra_cmdline = json.dumps(body['extra_cmdline']).strip()
                       if 'driver' in body: driver = body['driver'].strip()
                       if 'dts' in body: dts = body['dts'].strip()
-                if iscustom == 'true' and dts != '':
-                  url = dts
+                      if 'dts' in body: dtb = body['dts'].strip()
+                if iscustom == 'true' and dtb != '': # and dtb != 'auto':
+                  url = dtb
                   try:
                       try:
                           import wget, filetype
@@ -194,7 +195,6 @@ jobs:
                                           break
                                   if isfind is True:
                                       break
-
                           if os.path.exists(down) and (down.endswith('dts') or down.endswith('dtb')):
                               if down.endswith('dts'):
                                   wget.download('https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc')
@@ -222,6 +222,9 @@ jobs:
                   except ValueError as e:
                       iscustom = 'false'
                       errinfo = 'dtb 参数错误, {}, 请填写 dts/dtb 文件有效的 http(s) 下载链接.'.format(e)
+                  except Exception as e:
+                      iscustom = 'false'
+                      errinfo = 'dtb 参数错误, {}, 请稍后重试.'.format(e)
                   except Exception as e:
                       iscustom = 'false'
                       errinfo = 'dtb 参数错误, {}, 请稍后重试.'.format(e)
