@@ -1,6 +1,6 @@
 ---
 name: Custom
-about: 编译DS920+ JUN模式，请按照模板修改，dts请zip压缩上传，如果不存在则留空创建.
+about: 编译DS920+ JUN模式，请按照模板修改，dts请直接zip压缩上传，如果不存在则留空创建.
 title: 'Custom XXX'
 labels: ''
 assignees: ''
