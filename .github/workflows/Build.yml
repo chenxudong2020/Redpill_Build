@@ -124,7 +124,7 @@ jobs:
       - name: Get Build Info
         shell: python
         run: |
-    import os, re, json, shutil, string, subprocess
+          import os, re, json, shutil, string, subprocess
 
     def set_output(name, value):
       subprocess.call(["echo '{}={}' >> $GITHUB_ENV".format(name, value)], shell=True)
