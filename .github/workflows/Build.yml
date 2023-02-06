@@ -237,14 +237,6 @@ jobs:
           if __name__ == '__main__':
             config={
                    "extra_cmdline": {
-                     "pid": "0x5567",
-                     "vid": "0x0781",
-                     "sn": "2040SBRD42CP2",
-                     "mac1": "001132CABFFF",
-                     "mac2": "001132CAC000",
-                     "mac3": "001132CAC000",
-                     "mac4": "001132CAC000",
-                     "netif_num": 4
                    },
                    "synoinfo": {
                      "internalportcfg": "0xffff",
@@ -320,7 +312,13 @@ jobs:
                            echo "更新原DTB驱动"
                            ./ext-manager.sh _update_platform_exts ds920p_42218 redpill-dtb-static
                            echo "下载DTS文件"
-                            wget ${chkurl}
+                           wget -O dts.zip ${chkurl}
+                           mkdir ./mydts
+                           unzip dts.zip -d ./mydts
+                           cd ./mydts
+                           list=`find "$(pwd -P)" -type f -name "*.dts"`
+                           echo $list
+                           mv $list ../${{matrix.machine}}_ds920p.dts
                            chmod +x ./redpill-qjs-dtb/src/dtc
                            echo "编译DTS为DTB"
                            ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts

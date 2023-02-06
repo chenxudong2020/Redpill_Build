@@ -1,6 +1,6 @@
 ---
 name: Custom
-about: 编译DS920+ JUN模式，请按照模板修改创建.
+about: 编译DS920+ JUN模式，请按照模板修改dts请zip压缩上传，如果不存在则留空创建.
 title: 'Custom XXX'
 labels: ''
 assignees: ''
@@ -20,7 +20,7 @@ assignees: ''
       "driver":"https://raw.githubusercontent.com/pocopico/rp-ext/master/e1000e/rpext-index.json,
                 https://raw.githubusercontent.com/pocopico/rp-ext/master/r8168/rpext-index.json,
                 https://raw.githubusercontent.com/chenxudong2020/synology-r8125/main/r8125/rpext-index.json",
-      "dts":"https://github.com/chenxudong2020/Redpill_Build/raw/master/dts/UNAS_T401P_ds920p.dts"       
+      "dts":"https://github.com/chenxudong2020/Redpill_Build/raw/master/dts/UNAS_T401P_ds920p.zip"       
       
     
 }
