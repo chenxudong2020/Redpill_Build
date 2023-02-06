@@ -292,21 +292,6 @@ jobs:
            chkurl=${{ env.dts }}
            if [ ${{ env.dts }} ]
            then
-               HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
-               if [ ${HTTP_CODE} -ne 200 ]
-               then
-                           echo "不存在dts文件采用自动dtb补丁支持<=4盘"
-                           lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
-                           ./ext-manager.sh add ${lkmext}/redpill-dtb/rpext-index.json
-                            platform=${{matrix.platform}}
-                            version=${{matrix.version}}
-                            synoplatform=$(echo ${platform,,} | sed 's/+/p/g')
-                            synoversion=$(echo ${version} | awk -F - '{print $2}')
-                            key=${synoplatform}"_"${synoversion}
-                            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-                            echo ${key}
-                           ./ext-manager.sh _update_platform_exts ${key} pocopico.dtb
-               else
                             echo "加载原DTB驱动"
                            ./ext-manager.sh add https://raw.githubusercontent.com/pocopico/rp-ext/master/redpill-dtb-static/rpext-index.json
                            echo "更新原DTB驱动"
@@ -326,7 +311,6 @@ jobs:
                            dtbextfile="$(find custom -name model_ds920p.dtb)"
                            echo "复制编译好的DTB文件 ./ds920p.dtb 到 ${dtbextfile} ..."
                            sudo cp ./ds920p.dtb ${dtbextfile}
-               fi
            else
                  echo "不存在dts文件采用自动dtb补丁支持<=4盘"
                  lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
