@@ -234,7 +234,7 @@ jobs:
             ----
           emoji: eyes
       - name: Create Config File
-        if: env.iscustom == 'true'
+        if: env.issues == 'true' && env.iscustom == 'true'
         shell: python
         run: |
           import os, json
@@ -259,6 +259,7 @@ jobs:
 
           with open('user_config.json', 'w', encoding="utf-8") as f:  f.write(json.dumps(config, indent=4))
       - name: 环境准备
+        if: env.issues == 'true' && env.iscustom == 'true'
         run: |
           sudo apt update
           sudo apt-get install -y curl bspatch jq git
@@ -284,6 +285,7 @@ jobs:
 
 
       - name: 添加扩展驱动
+        if: env.issues == 'true' && env.iscustom == 'true'
         run: |
           cd /home/runner/redpill-load
           ./ext-manager.sh add 'https://github.com/jumkey/redpill-load/raw/develop/redpill-misc/rpext-index.json'
@@ -301,6 +303,7 @@ jobs:
           fi
 
       - name: 编译DTB
+        if: env.issues == 'true' && env.iscustom == 'true'
         run: |
           cd /home/runner/redpill-load
            chkurl=${{ env.dts }}
@@ -334,6 +337,7 @@ jobs:
            fi
 
       - name: 编译引导
+        if: env.issues == 'true' && env.iscustom == 'true'
         run: |
           cd /home/runner/redpill-load
           # 容错
@@ -343,12 +347,12 @@ jobs:
           cp -f /home/runner/redpill-load/ds920p_user_config.json /home/runner/redpill-load/images
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
-        if: always()
+        if: env.issues == 'true' && env.iscustom == 'true'
         with:
           name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
           path: /home/runner/redpill-load/images
       - name: 上传到WeTransfer
-        if: always()
+        if: env.issues == 'true' && env.iscustom == 'true'
         run: |
           curl -fsSL git.io/file-transfer | sh
           ./transfer wet -s -p 16 --no-progress /home/runner/redpill-load/images 2>&1 | tee wetransfer.log

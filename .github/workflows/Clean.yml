@@ -13,5 +13,6 @@ jobs:
         with:
           actions: 'close-issues'
           token: ${{ secrets.mytoken }}
+          exclude-labels：'pin'
           body: '超过7天暂时没时间处理，关闭issue'
           inactive-day: 7
