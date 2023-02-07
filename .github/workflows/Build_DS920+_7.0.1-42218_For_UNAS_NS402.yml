@@ -36,7 +36,7 @@ jobs:
       - name: 获取项目描述
         id: desc
         run: |
-          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/main/README.MD -O /home/runner/desc.txt
+          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/README.MD -O /home/runner/desc.txt
           echo "description=$(cat /home/runner/desc.txt)" >> $GITHUB_OUTPUT
         
       - name: 环境准备
@@ -45,7 +45,7 @@ jobs:
           sudo apt-get install -y curl bspatch jq git
           git clone https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
           cp -f type.sh /home/runner/redpill-load
-          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/main/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
+          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
           # wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpillprod/releases/redpill-4.4.180plus-geminilake.tgz
           # tar zxvf redpill-4.4.180plus-geminilake.tgz -C ./
           # mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
@@ -72,7 +72,7 @@ jobs:
           cd /home/runner/redpill-load
           # 容错
           chmod +x type.sh && ./type.sh
-          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/main/dts/${{matrix.machine}}_ds920p.dts
+          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
           HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
           if [ ${HTTP_CODE} -ne 200 ]
           then
@@ -93,7 +93,7 @@ jobs:
                       echo "更新原DTB驱动"
                       ./ext-manager.sh _update_platform_exts ds920p_42218 redpill-dtb-static
                       echo "下载DTS文件"
-                       wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/main/dts/${{matrix.machine}}_ds920p.dts
+                       wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
                       chmod +x ./redpill-qjs-dtb/src/dtc
                       echo "编译DTS为DTB"
                       ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
