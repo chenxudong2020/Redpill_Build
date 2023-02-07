@@ -126,120 +126,50 @@ jobs:
         run: |
           import os, re, json, shutil, string, subprocess
 
-    def set_output(name, value):
-      subprocess.call(["echo '{}={}' >> $GITHUB_ENV".format(name, value)], shell=True)
+          def set_output(name, value):
+              subprocess.call(["echo '{}={}' >> $GITHUB_ENV".format(name, value)], shell=True)
 
-    if __name__ == '__main__':
+          if __name__ == '__main__':
 
-      extra_cmdline = ''
-      driver = ''
-      dts = ''
-      iscustom='true'
+              extra_cmdline = ''
+              driver = ''
+              dts = ''
+              iscustom='true'
 
-      try:
-        body = {}
-        bodyOriginal = {}
-        if '${{ github.event_name }}' == 'issues':
-          if '${{ env.issuetitle }}'.lower().startswith('custom'):
-            issues = 'true'
-            bodyOriginal = json.loads('${{ env.issuebody }}')
-          else:
-            iscustom = 'false'
-        else:
-          bodyOriginal = json.loads('${{ inputs.body }}')
-
-        for k, v in bodyOriginal.items():
-      body[k.lower()] = v
-
-      if len(body) == 0:
-        iscustom = 'false'
-        errinfo = 'body 错误, body is null'
-      else:
-        # l = lambda x: x.strip() if isinstance(x, str) else str(x)
-        if 'extra_cmdline' in body: extra_cmdline = json.dumps(body['extra_cmdline']).strip()
-        if 'driver' in body: driver = body['driver'].strip()
-        if 'dts' in body: dts = body['dts'].strip()
-        if 'dts' in body: dtb = body['dts'].strip()
-            if iscustom == 'true' and dtb != '': # and dtb != 'auto':
-              url = dtb
               try:
-                try:
-                  import wget, filetype
-                except ModuleNotFoundError:
-                  os.system('pip3 install wget filetype')
-                  import wget, filetype
-
-                res = wget.download(url)
-                if res:
-                  down = res
-                  kind = filetype.guess(down)
-                  name = 'user'
-                  if os.path.exists('extract'):
-                    shutil.rmtree('extract')
-                  if kind != None and kind.extension == 'zip':
-                    import zipfile
-                    z = zipfile.ZipFile(down, 'r')
-                    z.extractall('extract')
-                  if kind != None and kind.extension in ['tar', 'gz']:
-                    import tarfile
-                    z = tarfile.open(down)
-                    z.extractall('extract')
-                  if os.path.exists('extract'):
-                    isfind = False
-                    for root, dirs, files in os.walk('extract'):
-                      for file in files:
-                        if file.endswith('.dts') or file.endswith('.dtb'):
-                          isfind = True
-                          down = name + os.path.splitext(file)[-1]
-                          shutil.move(os.path.join(root, file), down)
-                          break
-                      if isfind is True:
-                        break
-                  if os.path.exists(down) and (down.endswith('dts') or down.endswith('dtb')):
-                    if down.endswith('dts'):
-                      wget.download('https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc')
-                      if os.path.exists('dtc'):
-                        print('./dtc -q -I dts -O dtb {} >{}.dtb'.format(down, name))
-                        os.system('sudo chmod a+x dtc')
-                        # os.system('sudo ./dtc -q -I dts -O dtb {} >{}.dtb'.format(down, name))
-                        p = subprocess.Popen('sudo ./dtc -q -I dts -O dtb {} >{}.dtb'.format(down, name), shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        errinfo = p.stderr.read().decode('utf-8')
-                        if os.path.exists('{}.dtb'.format(name)) and os.path.getsize('{}.dtb'.format(name)) > 0:
-                          print('dtc ok ...')
-                          dtb = os.path.abspath('{}.dtb'.format(name))
-                        else:
-                          iscustom = 'false'
-                          errinfo = 'dtb 参数错误, dts文件内容存在错误 <{}>.'.format(errinfo.
-                          lace('\r', '').replace('\n', ' '))
+                  body = {}
+                  bodyOriginal = {}
+                  if '${{ github.event_name }}' == 'issues':
+                      if '${{ env.issuetitle }}'.lower().startswith('custom'):
+                          issues = 'true'
+                          bodyOriginal = json.loads('${{ env.issuebody }}')
                       else:
-                        iscustom = 'false'
-                        errinfo = 'dtb 参数错误, 下载 dtc(dts->dtb tools) 失败, 可能是服务器压力过大, 请稍后重试, 或者直接使用 dtb 文件跳过转换.'
-                    else:
-                      dtb = os.path.abspath(down)
+                          iscustom = 'false'
                   else:
-                    iscustom = 'false'
-                    errinfo = 'dtb 参数错误, 该url下载的文件不是所支持的格式.'
-              except ValueError as e:
-                iscustom = 'false'
-                errinfo = 'dtb 参数错误, {}, 请填写 dts/dtb 文件有效的 http(s) 下载链接.'.format(e)
-              except Exception as e:
-                iscustom = 'false'
-                errinfo = 'dtb 参数错误, {}, 请稍后重试.'.format(e)
-              except Exception as e:
-                iscustom = 'false'
-                errinfo = 'dtb 参数错误, {}, 请稍后重试.'.format(e)
-        set_output('issues', issues)
-        set_output('iscustom', iscustom)
-        set_output('extra_cmdline', extra_cmdline)
-        set_output('driver', driver)
-        set_output('dts', dts)
-        set_output('dtb', dtb)
+                      bodyOriginal = json.loads('${{ inputs.body }}')
+
+                  for k, v in bodyOriginal.items():
+                    body[k.lower()] = v
+
+                  if len(body) == 0:
+                      iscustom = 'false'
+                      errinfo = 'body 错误, body is null'
+                  else:
+                      # l = lambda x: x.strip() if isinstance(x, str) else str(x)
+                      if 'extra_cmdline' in body: extra_cmdline = json.dumps(body['extra_cmdline']).strip()
+                      if 'driver' in body: driver = body['driver'].strip()
+                      if 'dts' in body: dts = body['dts'].strip()
+                      set_output('issues', issues)
+                      set_output('iscustom', iscustom)
+                      set_output('extra_cmdline', extra_cmdline)
+                      set_output('driver', driver)
+                      set_output('dts', dts)
 
 
-      except Exception as e:
-          iscustom = 'false'
-            errinfo = 'body 错误, 不符合JSON规范 {}.'.format(e)
-            set_output('errinfo', errinfo)
+              except Exception as e:
+                  iscustom = 'false'
+                  errinfo = 'body 错误, 不符合JSON规范 {}.'.format(e)
+                  set_output('errinfo', errinfo)
       - name: Echo Build Info
         run: |
           echo issues:            '${{ env.issues }}'
@@ -362,18 +292,27 @@ jobs:
            chkurl=${{ env.dts }}
            if [ ${{ env.dts }} ]
            then
+               HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
+               if [ ${HTTP_CODE} -ne 200 ]
+               then
+                           echo "不存在dts文件采用自动dtb补丁支持<=4盘"
+                           lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+                           ./ext-manager.sh add ${lkmext}/redpill-dtb/rpext-index.json
+                            platform=${{matrix.platform}}
+                            version=${{matrix.version}}
+                            synoplatform=$(echo ${platform,,} | sed 's/+/p/g')
+                            synoversion=$(echo ${version} | awk -F - '{print $2}')
+                            key=${synoplatform}"_"${synoversion}
+                            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                            echo ${key}
+                           ./ext-manager.sh _update_platform_exts ${key} pocopico.dtb
+               else
                             echo "加载原DTB驱动"
                            ./ext-manager.sh add https://raw.githubusercontent.com/pocopico/rp-ext/master/redpill-dtb-static/rpext-index.json
                            echo "更新原DTB驱动"
                            ./ext-manager.sh _update_platform_exts ds920p_42218 redpill-dtb-static
                            echo "下载DTS文件"
-                           wget -O dts.zip ${chkurl}
-                           mkdir ./mydts
-                           unzip dts.zip -d ./mydts
-                           cd ./mydts
-                           list=`find "$(pwd -P)" -type f -name "*.dts"`
-                           echo $list
-                           mv $list ../${{matrix.machine}}_ds920p.dts
+                            wget -O ${{matrix.machine}}_ds920p.dts ${chkurl}
                            chmod +x ./redpill-qjs-dtb/src/dtc
                            echo "编译DTS为DTB"
                            ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
@@ -381,6 +320,7 @@ jobs:
                            dtbextfile="$(find custom -name model_ds920p.dtb)"
                            echo "复制编译好的DTB文件 ./ds920p.dtb 到 ${dtbextfile} ..."
                            sudo cp ./ds920p.dtb ${dtbextfile}
+               fi
            else
                  echo "不存在dts文件采用自动dtb补丁支持<=4盘"
                  lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
