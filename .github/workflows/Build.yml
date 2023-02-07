@@ -132,6 +132,7 @@ jobs:
           if __name__ == '__main__':
 
               extra_cmdline = ''
+              synoinfo=''
               driver = ''
               dts = ''
               iscustom='true'
@@ -157,11 +158,13 @@ jobs:
                   else:
                       # l = lambda x: x.strip() if isinstance(x, str) else str(x)
                       if 'extra_cmdline' in body: extra_cmdline = json.dumps(body['extra_cmdline']).strip()
+                      if 'synoinfo' in body: synoinfo = json.dumps(body['synoinfo']).strip()
                       if 'driver' in body: driver = body['driver'].strip()
                       if 'dts' in body: dts = body['dts'].strip()
                       set_output('issues', issues)
                       set_output('iscustom', iscustom)
                       set_output('extra_cmdline', extra_cmdline)
+                      set_output('synoinfo', synoinfo)
                       set_output('driver', driver)
                       set_output('dts', dts)
 
@@ -175,6 +178,7 @@ jobs:
           echo issues:            '${{ env.issues }}'
           echo iscustom:            '${{ env.iscustom }}'
           echo extra_cmdline:            '${{ env.extra_cmdline }}'
+          echo synoinfo:            '${{ env.synoinfo }}'
           echo driver:            '${{ env.driver }}'
           echo dts:            '${{ env.dts }}'
       - name: Add Issues labels
@@ -251,6 +255,7 @@ jobs:
                    "extensions": []
                  }
           if '${{ env.extra_cmdline }}' != '':  config["extra_cmdline"]=  json.loads('${{ env.extra_cmdline }}')
+          if '${{ env.synoinfo }}' != '':  config["synoinfo"]=  json.loads('${{ env.synoinfo }}')
 
           with open('user_config.json', 'w', encoding="utf-8") as f:  f.write(json.dumps(config, indent=4))
       - name: 环境准备
