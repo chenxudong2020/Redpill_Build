@@ -136,6 +136,7 @@ jobs:
               driver = ''
               dts = ''
               iscustom='true'
+              issues='false'
 
               try:
                   body = {}
