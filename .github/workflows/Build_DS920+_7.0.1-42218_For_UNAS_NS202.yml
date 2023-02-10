@@ -110,7 +110,7 @@ jobs:
         run: |
           cd /home/runner/redpill-load
           # 容错
-          chmod +x type.sh && ./type.sh
+          chmod +x type2.sh && ./type2.sh
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
           sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
