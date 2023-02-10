@@ -43,13 +43,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get install -y curl bspatch jq git
-          git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
-          cp -f x* /home/runner/redpill-load/cache
-          cp -f type2.sh /home/runner/redpill-load
-          cd /home/runner/redpill-load/cache
-          cat x* > DSM_DS920+_42218.pat
-          echo $(sha256sum DSM_DS920+_42218.pat)
-          
+          git clone https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
+          cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
           # wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpillprod/releases/redpill-4.4.180plus-geminilake.tgz
           # tar zxvf redpill-4.4.180plus-geminilake.tgz -C ./
@@ -75,42 +70,42 @@ jobs:
       - name: 编译DTB
         run: |
           cd /home/runner/redpill-load
-           chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
-           HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
-           if [ ${HTTP_CODE} -ne 200 ]
-           then
-                       echo "不存在dts文件采用自动dtb补丁支持<=4盘"
-                       lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
-                       ./ext-manager.sh add ${lkmext}/redpill-dtb/rpext-index.json
-                        platform=${{matrix.platform}}
-                        version=${{matrix.version}}
-                        synoplatform=$(echo ${platform,,} | sed 's/+/p/g')
-                        synoversion=$(echo ${version} | awk -F - '{print $2}')
-                        key=${synoplatform}"_"${synoversion}
-                        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-                        echo ${key}
-                       ./ext-manager.sh _update_platform_exts ${key} pocopico.dtb
-           else
-                        echo "加载原DTB驱动"
-                       ./ext-manager.sh add https://raw.githubusercontent.com/pocopico/rp-ext/master/redpill-dtb-static/rpext-index.json
-                       echo "更新原DTB驱动"
-                       ./ext-manager.sh _update_platform_exts ds920p_42218 redpill-dtb-static
-                       echo "下载DTS文件"
-                        wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
-                       chmod +x ./redpill-qjs-dtb/src/dtc
-                       echo "编译DTS为DTB"
-                       ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
-                       echo "cp ./ds920p.dtb /home/runner/redpill-load/custom/extensions/redpill-dtb-static/ds920p_42218/model_ds920p.dtb"
-                       dtbextfile="$(find custom -name model_ds920p.dtb)"
-                       echo "复制编译好的DTB文件 ./ds920p.dtb 到 ${dtbextfile} ..."
-                       sudo cp ./ds920p.dtb ${dtbextfile}
-           fi
+          # 容错
+          chmod +x type.sh && ./type.sh
+          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+          HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
+          if [ ${HTTP_CODE} -ne 200 ]
+          then
+                      echo "不存在dts文件采用自动dtb补丁支持<=4盘"
+                      lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+                      ./ext-manager.sh add ${lkmext}/redpill-dtb/rpext-index.json
+                       platform=${{matrix.platform}}
+                       version=${{matrix.version}}
+                       synoplatform=$(echo ${platform,,} | sed 's/+/p/g')
+                       synoversion=$(echo ${version} | awk -F - '{print $2}')
+                       key=${synoplatform}"_"${synoversion}
+                       echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                       echo ${key}
+                      ./ext-manager.sh _update_platform_exts ${key} pocopico.dtb
+          else
+                       echo "加载原DTB驱动"
+                      ./ext-manager.sh add https://raw.githubusercontent.com/pocopico/rp-ext/master/redpill-dtb-static/rpext-index.json
+                      echo "更新原DTB驱动"
+                      ./ext-manager.sh _update_platform_exts ds920p_42218 redpill-dtb-static
+                      echo "下载DTS文件"
+                       wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+                      chmod +x ./redpill-qjs-dtb/src/dtc
+                      echo "编译DTS为DTB"
+                      ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
+                      echo "cp ./ds920p.dtb /home/runner/redpill-load/custom/extensions/redpill-dtb-static/ds920p_42218/model_ds920p.dtb"
+                      dtbextfile="$(find custom -name model_ds920p.dtb)"
+                      echo "复制编译好的DTB文件 ./ds920p.dtb 到 ${dtbextfile} ..."
+                      sudo cp ./ds920p.dtb ${dtbextfile}
+          fi
           
       - name: 编译引导
         run: |
           cd /home/runner/redpill-load
-          # 容错
-          chmod +x type2.sh && ./type2.sh
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
           sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
