@@ -2,8 +2,9 @@ name: BuildLkms
 
 # Controls when the workflow will run
 on:
-  schedule:
-    - cron: "0 17 ? * L"
+  # When a release is published
+  release:
+    types: [published]
   # 每周最后一天凌晨1点执行
   workflow_dispatch:
     inputs:
