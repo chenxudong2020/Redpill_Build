@@ -3,8 +3,6 @@ name: BuildLkms
 # Controls when the workflow will run
 on:
   # When a release is published
-  release:
-    types: [published]
   # 每周最后一天凌晨1点执行
   workflow_dispatch:
     inputs:
@@ -45,6 +43,5 @@ jobs:
       # Publish a release if is a tag
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: redpill-lkm/output/rp-lkms.zip
