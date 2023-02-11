@@ -262,7 +262,7 @@ jobs:
       - name: 环境准备
         if: env.issues == 'true' && env.iscustom == 'true'
         run: |
-          sudo apt update
+          # sudo apt update
           sudo apt-get install -y curl bspatch jq git
           git clone https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
           cp -f type.sh /home/runner/redpill-load
