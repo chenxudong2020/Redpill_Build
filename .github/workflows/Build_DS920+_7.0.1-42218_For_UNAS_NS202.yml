@@ -42,7 +42,7 @@ jobs:
       - name: 环境准备
         run: |
           # sudo apt update
-          # sudo apt-get install -y curl bspatch jq git
+           sudo apt-get install -y curl bspatch jq git
           git clone https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
           cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
