@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Redpill LKM for all platforms
-          path: output
+          path: redpill-lkm/output
           retention-days: 1
 
       # Publish a release if is a tag
@@ -47,4 +47,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: rp-lkms.zip
+          files: redpill-lkm/output/rp-lkms.zip
