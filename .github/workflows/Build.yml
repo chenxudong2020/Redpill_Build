@@ -272,31 +272,30 @@ jobs:
             # wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpillprod/releases/redpill-4.4.180plus-geminilake.tgz
             # tar zxvf redpill-4.4.180plus-geminilake.tgz -C ./
             # mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
-
       - name: restore_cache_lkms
-          id: lkms
-          uses: actions/cache@v3
-          with:
+        id: restore_cache_lkms 
+        uses: actions/cache@v3
+        with:
             path: ./redpill-lkm/output/
             key: ${{ runner.os }}-lkms
       - name: build_lkms
-          if: steps.lkms.outputs.cache-hit == 'false'
-          shell: pwsh
-          run: |
+        if: steps.lkms.outputs.cache-hit == 'false'
+        shell: pwsh
+        run: |
             # 编译arpl使用的lkm
             git clone --recursive https://github.com/fbelavenuto/redpill-lkm.git
             cd ./redpill-lkm
             ./compile-lkms.sh
       - name: setup_lkms
-          run: |
+        run: |
             gunzip ./redpill-lkm/output/rp-geminilake-4.4.180-prod.ko.gz
             mv ./redpill-lkm/output/rp-geminilake-4.4.180-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
       - name: save_lkms
-          id: save_cache
-          uses: actions/cache/save@v3
-          with:
-            path: ./redpill-lkm/output/
-            key: ${{ runner.os }}-lkms
+        id: save_cache
+        uses: actions/cache/save@v3
+        with:
+          path: ./redpill-lkm/output/
+          key: ${{ runner.os }}-lkms
 
       - name: 添加扩展驱动
         if: env.issues == 'true' && env.iscustom == 'true'
