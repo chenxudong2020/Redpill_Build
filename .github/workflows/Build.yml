@@ -290,12 +290,9 @@ jobs:
             cd /home/runner/redpill-lkm/output/
             gunzip rp-geminilake-4.4.180-prod.ko.gz
             mv rp-geminilake-4.4.180-prod.ko redpill.ko
-            ls
       - name: setup_lkms
         run: |
-            cd /home/runner/redpill-lkm/output/
-            ls
-            mv /home/runner/redpill-lkm/output/redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
+            cp /home/runner/redpill-lkm/output/redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
       - name: save_lkms
         id: save_cache
         uses: actions/cache/save@v3
