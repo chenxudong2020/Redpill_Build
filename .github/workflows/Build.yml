@@ -295,6 +295,7 @@ jobs:
             cp /home/runner/redpill-lkm/output/redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
       - name: save_lkms
         id: save_cache
+        if: steps.lkms.outputs.cache-hit != 'true'
         uses: actions/cache/save@v3
         with:
           path: /home/runner/redpill-lkm/output/
