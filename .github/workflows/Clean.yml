@@ -2,7 +2,7 @@ name: Clean
 
 on:
   schedule:
-    - cron: "0 0 */7 * *"
+    - cron: "0 0 */3 * *"
 
 jobs:
   check-need-info:
@@ -14,5 +14,5 @@ jobs:
           actions: 'close-issues'
           token: ${{ secrets.mytoken }}
           exclude-labels: 'pin'
-          body: '超过7天暂时没时间处理，关闭issue'
-          inactive-day: 7
+          body: '超过3天暂时没时间处理，关闭issue'
+          inactive-day: 3

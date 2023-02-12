@@ -23,9 +23,9 @@ jobs:
             machine: Custom
             user: chenxudong2020
     steps:
-      - name: 检出项目文件
+      - name: 检出文件
         uses: actions/checkout@v3
-      - name: 创建issue comments
+      - name: 创建提示用户评论
         if: github.event_name == 'issues'
         id: comment
         uses: actions-cool/issues-helper@v3
@@ -38,23 +38,23 @@ jobs:
             > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             ----
           emoji: heart
-      - name: Set up Ruby 3
+      - name: 设置ruby3
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.1.2
 
-      - name: Set up Python 3
+      - name: 设置python3
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Init Env
+      - name: 初始化环境
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           sudo timedatectl set-timezone "Asia/Shanghai"
           python -m pip install --upgrade pip setuptools
-      - name: Get Issues Info
+      - name: 获取issue
         if: github.event_name == 'issues'
         id: get-issues
         uses: actions/github-script@v6
@@ -109,7 +109,7 @@ jobs:
                         core.setOutput("issueauth", JSON.stringify(issueauth));
                         core.setOutput("issuetitle", JSON.stringify(issuetitle));
                         core.setOutput("issuebody", JSON.stringify(issuebody));
-      - name: Set Issues Info
+      - name: 设置issue到上下文
         if: github.event_name == 'issues' && success()
         run: |
           echo issuenumber: '${{ steps.get-issues.outputs.issuenumber }}'
@@ -120,7 +120,7 @@ jobs:
           echo "issueauth="${{ steps.get-issues.outputs.issueauth }}"" >> $GITHUB_ENV
           echo "issuetitle="${{ steps.get-issues.outputs.issuetitle }}"" >> $GITHUB_ENV
           echo "issuebody="${{ steps.get-issues.outputs.issuebody }}"" >> $GITHUB_ENV
-      - name: Get Build Info
+      - name: 解析编译参数
         shell: python
         run: |
           import os, re, json, shutil, string, subprocess
@@ -173,7 +173,7 @@ jobs:
                   iscustom = 'false'
                   errinfo = 'body 错误, 不符合JSON规范 {}.'.format(e)
                   set_output('errinfo', errinfo)
-      - name: Echo Build Info
+      - name: 打印编译参数
         run: |
           echo issues:            '${{ env.issues }}'
           echo iscustom:            '${{ env.iscustom }}'
@@ -181,7 +181,7 @@ jobs:
           echo synoinfo:            '${{ env.synoinfo }}'
           echo driver:            '${{ env.driver }}'
           echo dts:            '${{ env.dts }}'
-      - name: Add Issues labels
+      - name: issue打标签
         if: env.issues == 'true' && env.iscustom == 'true'
         uses: actions-cool/issues-helper@v3
         with:
@@ -189,7 +189,7 @@ jobs:
           token: ${{ secrets.mytoken }}
           issue-number: ${{ env.issuenumber }}
           labels: 'custom'
-      - name: Update Comment Begin
+      - name: 编译开始更新评论
         if: env.issues == 'true' && env.iscustom == 'true'
         uses: actions-cool/issues-helper@v3
         with:
@@ -203,7 +203,7 @@ jobs:
             > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             ----
           emoji: heart
-      - name: Update Comment Error
+      - name: 问题格式错误更新评论
         if: env.issues == 'true' && env.iscustom == 'false'
         uses: actions-cool/issues-helper@v3
         with:
@@ -219,7 +219,7 @@ jobs:
             > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             ----
           emoji: confused
-      - name: Update Comment Invalid
+      - name: 非定制编译更新评论
         if: env.issues == 'false'
         uses: actions-cool/issues-helper@v3
         with:
@@ -233,7 +233,7 @@ jobs:
             > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             ----
           emoji: eyes
-      - name: Create Config File
+      - name: 创建配置文件
         if: env.issues == 'true' && env.iscustom == 'true'
         shell: python
         run: |
@@ -258,7 +258,10 @@ jobs:
           if '${{ env.synoinfo }}' != '':  config["synoinfo"]=  json.loads('${{ env.synoinfo }}')
 
           with open('user_config.json', 'w', encoding="utf-8") as f:  f.write(json.dumps(config, indent=4))
-      - name: 环境准备
+      - name: 打印配置文件
+        run: |
+          cat user_config.json
+      - name: 准备编译环境
         if: env.issues == 'true' && env.iscustom == 'true'
         run: |
           # sudo apt update
@@ -266,20 +269,17 @@ jobs:
           git clone -b develop https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
           cp -f type.sh /home/runner/redpill-load
           cp -f user_config.json /home/runner/redpill-load/ds920p_user_config.json
-          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-          cat user_config.json
-          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            # wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpillprod/releases/redpill-4.4.180plus-geminilake.tgz
-            # tar zxvf redpill-4.4.180plus-geminilake.tgz -C ./
-            # mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
+          # wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpillprod/releases/redpill-4.4.180plus-geminilake.tgz
+          # tar zxvf redpill-4.4.180plus-geminilake.tgz -C ./
+          # mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
 
-      - name: restore_cache_lkms
+      - name: 恢复lkms缓存
         id: lkms
         uses: actions/cache@v3
         with:
             path: /home/runner/redpill-lkm/output/
             key: ${{ runner.os }}-lkms
-      - name: build_lkms
+      - name: 创建lkms缓存
         if: steps.lkms.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
@@ -290,10 +290,10 @@ jobs:
             cd /home/runner/redpill-lkm/output/
             gunzip rp-geminilake-4.4.180-prod.ko.gz
             mv rp-geminilake-4.4.180-prod.ko redpill.ko
-      - name: setup_lkms
+      - name: 安装lkms
         run: |
             cp /home/runner/redpill-lkm/output/redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
-      - name: save_lkms
+      - name: 保存lkms缓存
         id: save_cache
         if: steps.lkms.outputs.cache-hit != 'true'
         uses: actions/cache/save@v3
@@ -375,7 +375,7 @@ jobs:
           ./transfer wet -s -p 16 --no-progress /home/runner/redpill-load/images 2>&1 | tee wetransfer.log
           echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
           echo "downloadurl="$(cat wetransfer.log | grep https)"" >> $GITHUB_ENV
-      - name: Update Comment End
+      - name: 编译结束更新评论
         if: env.issues == 'true' && env.iscustom == 'true'
         uses: actions-cool/issues-helper@v3
         with:
@@ -391,7 +391,7 @@ jobs:
             ${{ env.downloadurl }}
             ----
           emoji: hooray
-      - name: Close Issues
+      - name: 关闭问题
         if: env.issues == 'true' && env.iscustom == 'true' && success()
         uses: actions-cool/issues-helper@v3
         with:
@@ -399,7 +399,7 @@ jobs:
           token: ${{ secrets.mytoken }}
           issue-number: ${{ env.issuenumber }}
 
-      - name: Update Comment Fail
+      - name: 编译失败更新评论
         if: env.issues == 'true' && env.iscustom == 'true' && failure()
         uses: actions-cool/issues-helper@v3
         with:
@@ -411,9 +411,4 @@ jobs:
             ${{ env.issueauth }} 您好.
             您自定义的 DS920+ 构建失败. 请前往下面的 URL 查看详细信息对body进行修改并请重新触发编译(Close & Reopen).
             > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            ----
-            PS:
-            在Issues下评论 "delete builds" 即可删该Issues的所有历史编译记录.
-            >
-            ----
           emoji: confused
