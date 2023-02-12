@@ -114,12 +114,6 @@ jobs:
         with:
             name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
             path: /home/runner/redpill-load/images
-      - name: 上传到cowtransfer
-        if: always()
-        run: |
-                curl -fsSL git.io/file-transfer | sh
-                ./transfer cow -s -p 64 --no-progress /home/runner/redpill-load/images 2>&1 | tee cowtransfer.log
-                echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
       - name: 上传到WeTransfer
         if: always()
         run: |
