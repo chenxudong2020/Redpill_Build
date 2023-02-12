@@ -280,7 +280,7 @@ jobs:
             path: ./redpill-lkm/output/
             key: ${{ runner.os }}-lkms
       - name: build_lkms
-          if: steps.lkms.outputs.cache-hit == 'false'
+          if: steps.lkms.outputs.cache-hit != 'true'
           shell: pwsh
           run: |
             # 编译arpl使用的lkm
