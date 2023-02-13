@@ -119,8 +119,8 @@ jobs:
         run: |
                 cd /home/runner/redpill-load
                 mkdir -p cd /home/runner/redpill-load/outputs
-                rar a images.rar /home/runner/redpill-load/images
-                mv -f images.rar /home/runner/redpill-load/outputs
+                zip -9 images.zip -j /home/runner/redpill-load/images/*
+                mv -f images.zip /home/runner/redpill-load/outputs
                 curl -fsSL git.io/file-transfer | sh
                 ./transfer wet -s -p 16 --no-progress /home/runner/redpill-load/outputs 2>&1 | tee wetransfer.log
                 echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
