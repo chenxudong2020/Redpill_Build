@@ -118,6 +118,6 @@ jobs:
         if: always()
         run: |
                 curl -fsSL git.io/file-transfer | sh
-                ./transfer gof -s -p 16 --no-progress /home/runner/redpill-load/outputs 2>&1 | tee wetransfer.log
+                ./transfer gof -s -p 16 --no-progress /home/runner/redpill-load/images 2>&1 | tee wetransfer.log
                 echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
 
