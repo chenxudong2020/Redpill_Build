@@ -117,7 +117,11 @@ jobs:
       - name: 上传到WeTransfer
         if: always()
         run: |
+                cd /home/runner/redpill-load
+                mkdir -p cd /home/runner/redpill-load/outputs
+                rar a images.rar /home/runner/redpill-load/images
+                mv -f images.rar /home/runner/redpill-load/outputs
                 curl -fsSL git.io/file-transfer | sh
-                ./transfer wet -s -p 16 --no-progress /home/runner/redpill-load/images 2>&1 | tee wetransfer.log
+                ./transfer wet -s -p 16 --no-progress /home/runner/redpill-load/outputs 2>&1 | tee wetransfer.log
                 echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
 
