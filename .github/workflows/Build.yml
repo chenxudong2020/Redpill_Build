@@ -368,13 +368,6 @@ jobs:
         with:
           name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
           path: /home/runner/redpill-load/images
-      - name: 上传到WeTransfer
-        if: env.issues == 'true' && env.iscustom == 'true'
-        run: |
-          curl -fsSL git.io/file-transfer | sh
-          ./transfer wet -s -p 16 --no-progress /home/runner/redpill-load/images 2>&1 | tee wetransfer.log
-          echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
-          echo "downloadurl="$(cat wetransfer.log | grep https)"" >> $GITHUB_ENV
       - name: 编译结束更新评论
         if: env.issues == 'true' && env.iscustom == 'true'
         uses: actions-cool/issues-helper@v3
@@ -387,8 +380,6 @@ jobs:
             ${{ env.issueauth }} 您好.
             您自定义的 DS920+ 已开始构建完成. 请前往下面的 URL 查看详细信息.
             > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            通过如下链接快速下载：
-            ${{ env.downloadurl }}
             ----
           emoji: hooray
       - name: 关闭问题
