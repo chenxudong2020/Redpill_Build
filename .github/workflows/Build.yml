@@ -305,6 +305,7 @@ jobs:
         if: env.issues == 'true' && env.iscustom == 'true'
         run: |
           cd /home/runner/redpill-load
+          ./ext-manager.sh add 'https://github.com/pocopico/rp-ext/raw/main/redpill-boot-wait/rpext-index.json'
           ./ext-manager.sh add 'https://github.com/jumkey/redpill-load/raw/develop/redpill-misc/rpext-index.json'
           ./ext-manager.sh add 'https://github.com/pocopico/redpill-load/raw/develop/redpill-acpid/rpext-index.json'
           if [ -n "${{ env.driver }}" ]; then
