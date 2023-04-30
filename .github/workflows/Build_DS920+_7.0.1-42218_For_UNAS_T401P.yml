@@ -46,10 +46,16 @@ jobs:
           git clone -b develop https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
           cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
-          # 切换新内核支持7.2
-          wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill/releases/redpill-4.4.302plus-broadwellnk.tgz
-          tar zxvf redpill-4.4.302plus-broadwellnk.tgz -C ./
-          mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.302+.ko
+          # 编译arpl使用的lkm
+          git clone --recursive https://github.com/fbelavenuto/redpill-lkm.git
+          cd ./redpill-lkm
+          ./compile-lkms.sh
+          cd ..
+          zip -9 lkm.zip -j ./redpill-lkm/output/*
+          mkdir lkmdir
+          unzip lkm.zip -d ./lkmdir
+          gunzip ./lkmdir/rp-geminilake-4.4.180-prod.ko.gz
+          mv ./lkmdir/rp-geminilake-4.4.180-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
           
       - name: 添加扩展驱动
         run: |
