@@ -42,7 +42,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.1.2
-          
+
       - name: Set up Python 3
         uses: actions/setup-python@v4
         with:
@@ -57,6 +57,7 @@ jobs:
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
           
            # make config
+          cd /home/runner/redpill-load
           sudo pip install -r requirements.txt
           sudo python syno.py DS920+ 7.2.0-64216 1
           cat config/DS920+/7.2.0-64216/config.json
