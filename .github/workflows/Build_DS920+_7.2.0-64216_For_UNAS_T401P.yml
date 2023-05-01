@@ -38,6 +38,15 @@ jobs:
         run: |
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/README.MD -O /home/runner/desc.txt
           echo "description=$(cat /home/runner/desc.txt)" >> $GITHUB_OUTPUT
+      - name: Set up Ruby 3
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.2
+          
+      - name: Set up Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'   
         
       - name: 环境准备
         run: |
@@ -46,6 +55,12 @@ jobs:
           git clone -b main https://github.com/wjz304/redpill-load.git /home/runner/redpill-load
           cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
+          
+           # make config
+          sudo pip install -r requirements.txt
+          sudo python syno.py DS920+ 7.2.0-64216 1
+          cat config/DS920+/7.2.0-64216/config.json
+          
           # 切换新内核支持7.2
           wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill/releases/redpill-4.4.302plus-geminilake.tgz
           tar zxvf redpill-4.4.302plus-geminilake.tgz -C ./
@@ -99,7 +114,8 @@ jobs:
           # 容错
           chmod +x type.sh && ./type.sh
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+          platform='geminilake-4.4.302'
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=${platform} ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
