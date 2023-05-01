@@ -1,4 +1,4 @@
-name: Build DS920+ 7.2.0-64216 For UNAS_T401P
+name: Build DS920+ 7.0.1-42218_New_Kernel_For_UNAS_T401P
 
 on:
   schedule:
@@ -19,7 +19,7 @@ jobs:
       matrix:
         include:
           - platform: DS920+
-            version: 7.2.0-64216
+            version: 7.0.1-42218
             machine: UNAS_T401P
             user: chenxudong2020
 
@@ -38,34 +38,18 @@ jobs:
         run: |
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/README.MD -O /home/runner/desc.txt
           echo "description=$(cat /home/runner/desc.txt)" >> $GITHUB_OUTPUT
-      - name: Set up Ruby 3
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.1.2
-
-      - name: Set up Python 3
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'   
         
       - name: 环境准备
         run: |
           # sudo apt update
           sudo apt-get install -y curl bspatch jq git
-          git clone -b main https://github.com/wjz304/redpill-load.git /home/runner/redpill-load
+          git clone -b develop https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
           cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
-          
-           # make config
-          cd /home/runner/redpill-load
-          sudo pip install -r requirements.txt
-          sudo python syno.py DS920+ 7.2.0-64216 1
-          cat config/DS920+/7.2.0-64216/config.json
-          
           # 切换新内核支持7.2
           wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill/releases/redpill-4.4.302plus-geminilake.tgz
           tar zxvf redpill-4.4.302plus-geminilake.tgz -C ./
-          mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.302+.ko
+          mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
           
       - name: 添加扩展驱动
         run: |
@@ -115,8 +99,7 @@ jobs:
           # 容错
           chmod +x type.sh && ./type.sh
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          platform='geminilake-4.4.302'
-          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=${platform} ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
