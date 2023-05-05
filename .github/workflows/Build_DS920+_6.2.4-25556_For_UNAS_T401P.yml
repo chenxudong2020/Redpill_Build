@@ -80,32 +80,21 @@ jobs:
           HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
           if [ ${HTTP_CODE} -ne 200 ]
           then
-                      echo "不存在dts文件采用自动dtb补丁支持<=4盘"
-                      lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
-                      ./ext-manager.sh add ${lkmext}/redpill-dtb/rpext-index.json
-                       platform=${{matrix.platform}}
-                       version=${{matrix.version}}
-                       synoplatform=$(echo ${platform,,} | sed 's/+/p/g')
-                       synoversion=$(echo ${version} | awk -F - '{print $2}')
-                       key=${synoplatform}"_"${synoversion}
-                       echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-                       echo ${key}
-                      ./ext-manager.sh _update_platform_exts ${key} pocopico.dtb
+            echo "不存在dts文件采用自动dtb补丁支持<=4盘"
+            lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+            ./ext-manager.sh add ${lkmext}/addons/dtbpatch/rpext-index.json
           else
-                      curl -skL https://github.com/wjz304/rp-ext/raw/main/used.sh | bash
-                      echo "加载原DTB驱动"
-                      ./ext-manager.sh add https://raw.githubusercontent.com/wjz304/rp-ext/main/addons/dtbstatic/rpext-index.json
-                      echo "更新原DTB驱动"
-                      ./ext-manager.sh _update_platform_exts ds920p_25556 dtbstatic
-                      echo "下载DTS文件"
-                       wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
-                      chmod +x ./redpill-qjs-dtb/src/dtc
-                      echo "编译DTS为DTB"
-                      ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
-                      echo "cp ./ds920p.dtb /home/runner/redpill-load/custom/extensions/dtbstatic/ds920p_42218/model_ds920p.dtb"
-                      dtbextfile="$(find custom -name model_ds920p.dtb)"
-                      echo "复制编译好的DTB文件 ./ds920p.dtb 到 ${dtbextfile} ..."
-                      sudo cp ./ds920p.dtb ${dtbextfile}
+            echo "加载原DTB驱动"
+            ./ext-manager.sh add https://raw.githubusercontent.com/wjz304/rp-ext/main/addons/dtbstatic/rpext-index.json
+            echo "更新原DTB驱动"
+            ./ext-manager.sh _update_platform_exts _ dtbstatic
+            echo "下载DTS文件"
+            wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+            chmod +x ./redpill-qjs-dtb/src/dtc
+            echo "编译DTS为DTB"
+            ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
+            echo "复制编译好的DTB文件"
+            sudo cp ./ds920p.dtb custom/extensions/dtbstatic/_/user_model.dtb
           fi
           
       - name: 编译引导
@@ -114,7 +103,7 @@ jobs:
           # 容错
           chmod +x type.sh && ./type.sh
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.59 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
