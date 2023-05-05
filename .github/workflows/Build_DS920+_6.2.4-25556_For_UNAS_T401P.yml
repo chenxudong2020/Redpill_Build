@@ -96,13 +96,13 @@ jobs:
                       echo "加载原DTB驱动"
                       ./ext-manager.sh add https://raw.githubusercontent.com/wjz304/rp-ext/main/addons/dtbstatic/rpext-index.json
                       echo "更新原DTB驱动"
-                      ./ext-manager.sh _update_platform_exts ds920p_25556 redpill-dtb-static
+                      ./ext-manager.sh _update_platform_exts ds920p_25556 dtbstatic
                       echo "下载DTS文件"
                        wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
                       chmod +x ./redpill-qjs-dtb/src/dtc
                       echo "编译DTS为DTB"
                       ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
-                      echo "cp ./ds920p.dtb /home/runner/redpill-load/custom/extensions/redpill-dtb-static/ds920p_42218/model_ds920p.dtb"
+                      echo "cp ./ds920p.dtb /home/runner/redpill-load/custom/extensions/dtbstatic/ds920p_42218/model_ds920p.dtb"
                       dtbextfile="$(find custom -name model_ds920p.dtb)"
                       echo "复制编译好的DTB文件 ./ds920p.dtb 到 ${dtbextfile} ..."
                       sudo cp ./ds920p.dtb ${dtbextfile}
