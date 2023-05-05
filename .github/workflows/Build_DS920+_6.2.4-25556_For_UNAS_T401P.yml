@@ -90,9 +90,10 @@ jobs:
             ./ext-manager.sh _update_platform_exts _ dtbstatic
             echo "下载DTS文件"
             wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
-            chmod +x ./redpill-qjs-dtb/src/dtc
+            wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
+            chmod +x ./dtc
             echo "编译DTS为DTB"
-            ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
+            ./dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
             echo "复制编译好的DTB文件"
             sudo cp ./ds920p.dtb custom/extensions/dtbstatic/_/user_model.dtb
           fi
