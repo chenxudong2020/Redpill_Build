@@ -49,7 +49,7 @@ jobs:
           # make config
           pip install -r requirements.txt
           python syno.py ${{matrix.platform}} ${{matrix.version}} 1
-          cat config/${model}/${version}/config.json
+          cat config/${{matrix.platform}}/${{matrix.version}}/config.json
           popd
           
           cp -f type.sh /home/runner/redpill-load
