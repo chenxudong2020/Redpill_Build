@@ -84,10 +84,6 @@ jobs:
             lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
             ./ext-manager.sh add ${lkmext}/addons/dtbpatch/rpext-index.json
           else
-            echo "加载原DTB驱动"
-            ./ext-manager.sh add https://raw.githubusercontent.com/wjz304/rp-ext/main/addons/dtbstatic/rpext-index.json
-            echo "更新原DTB驱动"
-            ./ext-manager.sh _update_platform_exts _ dtbstatic
             echo "下载DTS文件"
             wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
             wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
@@ -95,7 +91,12 @@ jobs:
             echo "编译DTS为DTB"
             ./dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
             echo "复制编译好的DTB文件"
-            sudo cp ./ds920p.dtb custom/extensions/dtbstatic/_/user_model.dtb
+            sudo cp ./ds920p.dtb ext/dtbstatic/releases/user_model.dtb
+
+            dtbhash="`sha256sum ext/dtbstatic/releases/user_model.dtb | awk -F' ' '{print$1}'`"
+            sed -i "s|@@@PATH@@@|${PWD}|g" ext/dtbstatic/rpext-index.json ext/dtbstatic/recipes/universal.json
+            sed -i "s|@@@HASH@@@|${dtbhash}|g" ext/dtbstatic/recipes/universal.json
+            ./ext-manager.sh add "file://localhost${PWD}/ext/dtbstatic/rpext-index.json"
           fi
           
       - name: 编译引导
