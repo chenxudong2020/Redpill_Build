@@ -43,7 +43,15 @@ jobs:
         run: |
           # sudo apt update
           sudo apt-get install -y curl bspatch jq git
-          git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
+          # git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
+          git clone -b main https://github.com/wjz304/redpill-load /home/runner/redpill-load
+          pushd /home/runner/redpill-load
+          # make config
+          pip install -r requirements.txt
+          python syno.py ${{matrix.platform}} ${{matrix.version}} 1
+          cat config/${model}/${version}/config.json
+          popd
+          
           cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
           # 编译arpl使用的lkm
