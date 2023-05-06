@@ -71,7 +71,7 @@ jobs:
             rpext=https://raw.githubusercontent.com/wjz304/rp-ext/master
             ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
-            ./ext-manager.sh add "r8125"
+            ./ext-manager.sh add "${rpext}/modules/r8125/rpext-index.json"
           
       - name: 编译DTB
         run: |
