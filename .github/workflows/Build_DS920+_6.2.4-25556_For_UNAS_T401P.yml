@@ -57,7 +57,7 @@ jobs:
           # 编译arpl使用的lkm
           wget https://raw.githubusercontent.com/wjz304/rp-ext/main/lkms/rp-geminilake-4.4.59-prod.ko.gz
           gunzip ./rp-geminilake-4.4.59-prod.ko.gz
-          mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.59+.ko
+          mv ./rp-geminilake-4.4.59-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.59+.ko
           
       - name: 添加扩展驱动
         run: |
