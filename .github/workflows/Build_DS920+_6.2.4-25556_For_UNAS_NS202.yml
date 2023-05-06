@@ -1,4 +1,4 @@
-name: Build DS920+ 6.2.4-25556 For UNAS_T401P
+name: Build DS920+ 6.2.4-25556 For UNAS_NS202
 
 on:
   schedule:
@@ -20,7 +20,7 @@ jobs:
         include:
           - platform: DS920+
             version: 6.2.4-25556
-            machine: UNAS_T401P
+            machine: UNAS_NS202
             user: chenxudong2020
 
     steps:

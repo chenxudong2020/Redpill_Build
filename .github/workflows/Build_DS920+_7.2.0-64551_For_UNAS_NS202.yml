@@ -1,4 +1,4 @@
-name: Build DS920+ 6.2.4-25556 For UNAS_T401P
+name: Build DS920+ 7.2.0-64551_For_UNAS_NS202
 
 on:
   schedule:
@@ -19,8 +19,8 @@ jobs:
       matrix:
         include:
           - platform: DS920+
-            version: 6.2.4-25556
-            machine: UNAS_T401P
+            version: 7.2.0-64551
+            machine: UNAS_NS202
             user: chenxudong2020
 
     steps:
@@ -54,10 +54,10 @@ jobs:
           
           cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
-          # 使用wjz304的lkm
-          wget https://raw.githubusercontent.com/wjz304/rp-ext/main/lkms/rp-geminilake-4.4.59-prod.ko.gz
-          gunzip ./rp-geminilake-4.4.59-prod.ko.gz
-          mv ./rp-geminilake-4.4.59-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.59+.ko
+           # 切换新内核支持7.2
+          wget https://raw.githubusercontent.com/wjz304/rp-ext/main/lkms/rp-geminilake-4.4.302-prod.ko.gz
+          gunzip ./rp-geminilake-4.4.302-prod.ko.gz
+          mv ./rp-geminilake-4.4.302-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.302+.ko
           
       - name: 添加扩展驱动
         run: |
@@ -86,7 +86,6 @@ jobs:
             ./dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
             echo "复制编译好的DTB文件"
             sudo cp ./ds920p.dtb ext/dtbstatic/releases/user_model.dtb
-
             dtbhash="`sha256sum ext/dtbstatic/releases/user_model.dtb | awk -F' ' '{print$1}'`"
             sed -i "s|@@@PATH@@@|${PWD}|g" ext/dtbstatic/rpext-index.json ext/dtbstatic/recipes/universal.json
             sed -i "s|@@@HASH@@@|${dtbhash}|g" ext/dtbstatic/recipes/universal.json
@@ -97,7 +96,7 @@ jobs:
         run: |
           cd /home/runner/redpill-load
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          sudo BRP_JUN_MOD=0 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.59 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.302 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
