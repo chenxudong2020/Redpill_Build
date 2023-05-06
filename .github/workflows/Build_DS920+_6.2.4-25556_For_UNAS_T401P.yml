@@ -55,15 +55,9 @@ jobs:
           cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
           # 编译arpl使用的lkm
-          git clone --recursive https://github.com/fbelavenuto/redpill-lkm.git
-          cd ./redpill-lkm
-          ./compile-lkms.sh
-          cd ..
-          zip -9 lkm.zip -j ./redpill-lkm/output/*
-          mkdir lkmdir
-          unzip lkm.zip -d ./lkmdir
-          gunzip ./lkmdir/rp-geminilake-4.4.180-prod.ko.gz
-          mv ./lkmdir/rp-geminilake-4.4.180-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
+          wget https://raw.githubusercontent.com/wjz304/rp-ext/main/lkms/rp-geminilake-4.4.59-prod.ko.gz
+          gunzip ./rp-geminilake-4.4.59-prod.ko.gz
+          mv ./redpill.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.59+.ko
           
       - name: 添加扩展驱动
         run: |
@@ -103,7 +97,7 @@ jobs:
         run: |
           cd /home/runner/redpill-load
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          sudo BRP_JUN_MOD=0 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.180 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+          sudo BRP_JUN_MOD=0 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.59 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
