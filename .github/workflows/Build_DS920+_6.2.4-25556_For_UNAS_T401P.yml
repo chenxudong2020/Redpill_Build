@@ -67,11 +67,11 @@ jobs:
           
       - name: 添加扩展驱动
         run: |
-          cd /home/runner/redpill-load
-          ./ext-manager.sh add 'https://github.com/pocopico/rp-ext/raw/main/redpill-boot-wait/rpext-index.json'
-          ./ext-manager.sh add 'https://github.com/jumkey/redpill-load/raw/develop/redpill-misc/rpext-index.json'
-          ./ext-manager.sh add 'https://github.com/pocopico/redpill-load/raw/develop/redpill-acpid/rpext-index.json'
-          ./ext-manager.sh add 'https://raw.githubusercontent.com/pocopico/rp-ext/master/r8125/rpext-index.json'
+            cd /home/runner/redpill-load
+            rpext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+            ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
+            ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
+            ./ext-manager.sh add "r8125"
           
       - name: 编译DTB
         run: |
@@ -103,7 +103,7 @@ jobs:
         run: |
           cd /home/runner/redpill-load
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.59 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+          sudo BRP_JUN_MOD=0 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.180 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
