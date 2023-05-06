@@ -102,8 +102,6 @@ jobs:
       - name: 编译引导
         run: |
           cd /home/runner/redpill-load
-          # 容错
-          chmod +x type.sh && ./type.sh
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
           sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.59 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
