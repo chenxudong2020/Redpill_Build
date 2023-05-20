@@ -43,8 +43,7 @@ jobs:
         run: |
           # sudo apt update
           sudo apt-get install -y curl bspatch jq git
-          # git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
-          git clone -b main https://github.com/wjz304/redpill-load /home/runner/redpill-load
+          cp -rf redpill-load /home/runner/
           pushd /home/runner/redpill-load
           # make config
           pip install -r requirements.txt
@@ -69,28 +68,47 @@ jobs:
           
       - name: 编译DTB
         run: |
-          cd /home/runner/redpill-load
-          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
-          HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
-          if [ ${HTTP_CODE} -ne 200 ]
-          then
-            echo "不存在dts文件采用自动dtb补丁支持<=4盘"
-            lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
-            ./ext-manager.sh add ${lkmext}/addons/dtbpatch/rpext-index.json
-          else
-            echo "下载DTS文件"
-            wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
-            wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
-            chmod +x ./dtc
-            echo "编译DTS为DTB"
-            ./dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
-            echo "复制编译好的DTB文件"
-            sudo cp ./ds920p.dtb ext/dtbstatic/releases/user_model.dtb
-            dtbhash="`sha256sum ext/dtbstatic/releases/user_model.dtb | awk -F' ' '{print$1}'`"
-            sed -i "s|@@@PATH@@@|${PWD}|g" ext/dtbstatic/rpext-index.json ext/dtbstatic/recipes/universal.json
-            sed -i "s|@@@HASH@@@|${dtbhash}|g" ext/dtbstatic/recipes/universal.json
-            ./ext-manager.sh add "file://localhost${PWD}/ext/dtbstatic/rpext-index.json"
-          fi
+              cd /home/runner/redpill-load
+              chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+              HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
+              if [ ${HTTP_CODE} -ne 200 ]
+              then
+                echo "不存在dts文件采用自动dtb补丁支持<=4盘"
+                lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+                ./ext-manager.sh add ${lkmext}/addons/dtbpatch/rpext-index.json
+              else
+                echo "下载DTS文件"
+                wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+                wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
+                chmod +x ./dtc
+                echo "编译DTS为DTB"
+                ./dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
+        
+                EXT_PATH="`./ext/dtbstatic/make.sh ./ds920p.dtb`"
+                if [ -n "${EXT_PATH}" ]; then 
+                      echo "EXT_PATH: ${EXT_PATH}"
+                      ./ext-manager.sh add "${EXT_PATH}"
+                    else
+                      echo "loacl dtbstatic error"
+                      exit 1
+                fi
+                
+                echo "loacl localrss ..."
+                    model=${{matrix.platform}}
+                    version=${{matrix.version}}
+    
+                    paturl=$(cat config/${model}/${version}/config.json | jq -r '.os .pat_url')
+                    patmd5=$(cat config/${model}/${version}/config.json | jq -r '.os .hash')
+                    EXT_PATH="`./ext/localrss/make.sh "${paturl}" "${patmd5}"`"
+                    if [ -n "${EXT_PATH}" ]; then 
+                      echo "EXT_PATH: ${EXT_PATH}"
+                      ./ext-manager.sh add "${EXT_PATH}"
+                    else
+                      echo "loacl localrss error"
+                      exit 1
+                    fi 
+             
+              fi
           
       - name: 编译引导
         run: |
