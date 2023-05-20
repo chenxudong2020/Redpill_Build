@@ -1,0 +1,3 @@
+[submodule "redpill-load"]
+	path = redpill-load
+	url = https://github.com/wjz304/redpill-load.git
