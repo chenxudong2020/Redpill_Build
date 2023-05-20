@@ -46,7 +46,7 @@ jobs:
           # sudo apt update
           sudo apt-get install -y curl bspatch jq git
           # git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
-          git clone -b main https://github.com/wjz304/redpill-load /home/runner/redpill-load
+          cp -rf redpill-load /home/runner/
           pushd /home/runner/redpill-load
           # make config
           pip install -r requirements.txt
