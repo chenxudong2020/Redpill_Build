@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: 检出项目文件
         uses: actions/checkout@v3
+        with:
+          submodules: true
         
       - name: 获取当前时间
         id: date
