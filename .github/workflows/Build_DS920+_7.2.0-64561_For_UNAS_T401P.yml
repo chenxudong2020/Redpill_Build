@@ -1,8 +1,6 @@
-name: Build DS920+ 7.2.0-64551_For_UNAS_T201P
+name: Build DS920+ 7.2.0-64561_For_UNAS_T401P
 
 on:
-  schedule:
-    - cron: '0 18 * * *'
   workflow_dispatch:
     inputs:
       clean_cache:
@@ -19,8 +17,8 @@ jobs:
       matrix:
         include:
           - platform: DS920+
-            version: 7.2.0-64551
-            machine: UNAS_T201P
+            version: 7.2.0-64561
+            machine: UNAS_T401P
             user: chenxudong2020
 
     steps:
