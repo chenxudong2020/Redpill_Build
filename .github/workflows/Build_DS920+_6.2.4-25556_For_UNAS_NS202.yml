@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: DS720+
+          - platform: DS1621+
             version: 6.2.4-25556
             machine: UNAS_NS202
             user: chenxudong2020
