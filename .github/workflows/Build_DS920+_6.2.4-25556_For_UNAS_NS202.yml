@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: RS1221+
+          - platform: DS723+
             version: 6.2.4-25556
             machine: UNAS_NS202
             user: chenxudong2020
@@ -64,9 +64,9 @@ jobs:
       - name: 添加扩展驱动
         run: |
             cd /home/runner/redpill-load
-            rpext=https://raw.githubusercontent.com/wjz304/rp-ext/master
-            ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
-            ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
+      -:      rpext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+      -:  ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
+      -:     ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
             ./ext-manager.sh add "${rpext}/modules/r8169/rpext-index.json"
             ./ext-manager.sh add "${rpext}/modules/igb/rpext-index.json"
                  
