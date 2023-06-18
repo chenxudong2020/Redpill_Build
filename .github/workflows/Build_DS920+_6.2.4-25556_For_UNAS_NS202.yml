@@ -70,8 +70,7 @@ jobs:
             ./ext-manager.sh add "${rpext}/modules/r8125/rpext-index.json"
             ./ext-manager.sh add "${rpext}/modules/r8169/rpext-index.json"
             ./ext-manager.sh add "${rpext}/modules/igb/rpext-index.json"
-            ./ext-manager.sh add "${rpext}/modules/e000e/rpext-index.json"
-          
+                 
       - name: 编译DTB
         run: |
           cd /home/runner/redpill-load
