@@ -277,7 +277,7 @@ jobs:
           pushd /home/runner/redpill-load
           pip install -r requirements.txt
           python syno.py ${{matrix.platform}} ${{steps.version.outputs.maxVersion}} 1
-          cat config/${{matrix.platform}}/${{steps.version.outputs.maxVersion}}/config.json
+          # cat config/${{matrix.platform}}/${{steps.version.outputs.maxVersion}}/config.json
           popd
           \cp type.sh /home/runner/redpill-load
           \cp user_config.json /home/runner/redpill-load/ds920p_user_config.json
@@ -359,7 +359,7 @@ jobs:
         uses: actions/upload-artifact@master
         if: env.issues == 'true' && env.iscustom == 'true'
         with:
-          name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
+          name: ${{matrix.machine}}-${{matrix.platform}}-${{steps.version.outputs.maxVersion}}-b${{steps.date.outputs.now}}
           path: /home/runner/redpill-load/images
       - name: 编译结束更新评论
         if: env.issues == 'true' && env.iscustom == 'true'
@@ -371,7 +371,7 @@ jobs:
           update-mode: replace
           body: |
             ${{ env.issueauth }} 您好.
-            您自定义的 DS920+ 已开始构建完成. 请前往下面的 URL 查看详细信息.
+            您自定义的 DS920+ 版本：${{steps.version.outputs.maxVersion}} 已开始构建完成. 请前往下面的 URL 查看详细信息.
             > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             ----
           emoji: hooray
@@ -393,6 +393,6 @@ jobs:
           update-mode: replace
           body: |
             ${{ env.issueauth }} 您好.
-            您自定义的 DS920+ 构建失败. 请前往下面的 URL 查看详细信息对body进行修改并请重新触发编译(Close & Reopen).
+            您自定义的 DS920+ 版本: ${{steps.version.outputs.maxVersion}} 构建失败. 请前往下面的 URL 查看详细信息对body进行修改并请重新触发编译(Close & Reopen).
             > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           emoji: confused
