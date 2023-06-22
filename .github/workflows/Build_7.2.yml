@@ -273,13 +273,13 @@ jobs:
         if: env.issues == 'true' && env.iscustom == 'true'
         run: |
           sudo apt-get install -y curl bspatch jq git
-          \cp type.sh /home/runner/redpill-load
-          \cp user_config.json /home/runner/redpill-load/ds920p_user_config.json
           pushd /home/runner/redpill-load
           pip install -r requirements.txt
           python syno.py ${{matrix.platform}} ${{steps.version.outputs.maxVersion}} 1
           cat config/${{matrix.platform}}/${{steps.version.outputs.maxVersion}}/config.json
           popd
+          \cp type.sh /home/runner/redpill-load
+          \cp user_config.json /home/runner/redpill-load/ds920p_user_config.json
           # 切换新内核支持7.2
           wget https://raw.githubusercontent.com/wjz304/rp-ext/main/lkms/rp-geminilake-4.4.302-prod.ko.gz
           gunzip ./rp-geminilake-4.4.302-prod.ko.gz
