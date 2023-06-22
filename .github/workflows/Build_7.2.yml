@@ -273,6 +273,7 @@ jobs:
         if: env.issues == 'true' && env.iscustom == 'true'
         run: |
           sudo apt-get install -y curl bspatch jq git
+          cp -rf redpill-load /home/runner/
           pushd /home/runner/redpill-load
           pip install -r requirements.txt
           python syno.py ${{matrix.platform}} ${{steps.version.outputs.maxVersion}} 1
