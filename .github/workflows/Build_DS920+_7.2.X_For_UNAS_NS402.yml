@@ -1,4 +1,4 @@
-name: Build DS920+ 7.2.X_For_UNAS_NS402
+name: Build DS920+ 7.2.0-64570_For_UNAS_NS402
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ jobs:
       matrix:
         include:
           - platform: DS920+
-            version: 7.2.X
+            version: 7.2.0-64570
             machine: UNAS_NS402
             user: chenxudong2020
 
@@ -41,20 +41,14 @@ jobs:
         
       - name: 环境准备
         run: |
-          #sudo apt update
+          # sudo apt update
           sudo apt-get install -y curl bspatch jq git
           cp -rf redpill-load /home/runner/
           pushd /home/runner/redpill-load
-
-          wget https://raw.githubusercontent.com/wjz304/redpill-load/main/config/configs.json
-          maxVersion=$(cat  ./configs.json | jq -r 'to_entries| .[]| select(.key == "DS920+")| .value.platforms' | jq -r 'keys[length-1]')  
-          echo $maxVersion
-          echo "maxVersion=$maxVersion" >> $GITHUB_OUTPUT
-
           # make config
           pip install -r requirements.txt
-          python syno.py ${{matrix.platform}} ${{env.maxVersion}} 1
-          cat config/${{matrix.platform}}/${{env.maxVersion}}/config.json
+          python syno.py ${{matrix.platform}} ${{matrix.version}} 1
+          cat config/${{matrix.platform}}/${{matrix.version}}/config.json
           popd
           
           cp -f type.sh /home/runner/redpill-load
@@ -101,7 +95,7 @@ jobs:
                 
                 echo "loacl localrss ..."
                     model=${{matrix.platform}}
-                    version=${{env.maxVersion}}
+                    version=${{matrix.version}}
     
                     paturl=$(cat config/${model}/${version}/config.json | jq -r '.os .pat_url')
                     patmd5=$(cat config/${model}/${version}/config.json | jq -r '.os .hash')
@@ -120,11 +114,11 @@ jobs:
         run: |
           cd /home/runner/redpill-load
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.302 ./build-loader.sh '${{matrix.platform}}' '${{env.maxVersion}}'
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.302 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
         with:
-            name: ${{matrix.machine}}-${{matrix.platform}}-${{env.maxVersion}}-b${{steps.date.outputs.now}}
+            name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
             path: /home/runner/redpill-load/images
 
