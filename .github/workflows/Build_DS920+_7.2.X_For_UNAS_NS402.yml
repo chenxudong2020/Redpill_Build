@@ -41,13 +41,13 @@ jobs:
         
       - name: 环境准备
         run: |
-          sudo apt update
+          #sudo apt update
           sudo apt-get install -y curl bspatch jq git
           cp -rf redpill-load /home/runner/
           pushd /home/runner/redpill-load
 
-          maxVersion=$(cat  /home/runner/redpill-load/config/configs.json | jq -r 'to_entries| .[]| select(.key == "DS920+")| .value.platforms' | jq -r 'keys[length-1]')  
-          echo $maxVersion
+          wget https://raw.githubusercontent.com/wjz304/redpill-load/main/config/configs.json
+          maxVersion=$(cat  ./configs.json | jq -r 'to_entries| .[]| select(.key == "DS920+")| .value.platforms' | jq -r 'keys[length-1]')  
           echo "maxVersion=$(maxVersion)" >> $GITHUB_OUTPUT
 
           # make config
