@@ -1,4 +1,4 @@
-name: Build DS920+ 7.2.0-64570_For_UNAS_NS202
+name: Build DS920+ 7.2.X_For_UNAS_NS202
 
 on:
   workflow_dispatch:
