@@ -1,0 +1,21 @@
+{
+  "extra_cmdline": {
+    "pid": "0x5678",
+    "vid": "0x346D",
+    "sn": "20B0SBR1Q62GV",
+    "mac1": "9009D01B7505",
+    "mac2": "C5834F275ACC",
+    "netif_num": 2
+  },
+  "synoinfo": {
+    "internalportcfg": "0xffff",
+    "maxlanport": "7",
+    "support_led_behavior_v2": "no",
+    "support_led_brightness_adjustment": "no",
+    "support_bde_internal_10g": "no",
+    "support_disk_compatibility": "no",
+    "support_memory_compatibility": "no"
+  },
+  "ramdisk_copy": {},
+  "extensions": []
+}
