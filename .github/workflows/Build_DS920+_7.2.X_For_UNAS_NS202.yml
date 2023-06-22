@@ -47,18 +47,14 @@ jobs:
           sh ./version.sh
           maxVersion=$(cat version.txt)
           echo "maxVersion=$maxVersion" >> $GITHUB_OUTPUT
-          echo "------------------------------------------------------------------"
-          echo $maxVersion
-          echo ${{env.maxVersion}}
-          echo "------------------------------------------------------------------"
 
           # git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
           cp -rf redpill-load /home/runner/
           pushd /home/runner/redpill-load
           # make config
           pip install -r requirements.txt
-          python syno.py ${{matrix.platform}} ${{env.maxVersion}} 1
-          cat config/${{matrix.platform}}/${{env.maxVersion}}/config.json
+          python syno.py ${{matrix.platform}} $maxVersion 1
+          cat config/${{matrix.platform}}/$maxVersion/config.json
           popd
           
           cp -f type.sh /home/runner/redpill-load
