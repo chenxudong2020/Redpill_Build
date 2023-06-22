@@ -1,0 +1,398 @@
+name: Build
+
+on:
+  issues:
+    types: [opened, reopened]
+  workflow_dispatch:
+    inputs:
+      body:
+        description: 'issuss body'
+        required: true
+        default: ''
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: DS920+
+            version: 7.2.X
+            machine: Custom
+            user: chenxudong2020
+    steps:
+      - name: 检出文件
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: 获取版本
+        id: version
+        run: |
+          sh ./version.sh
+          echo "maxVersion=$(cat version.txt)" >> $GITHUB_OUTPUT    
+
+      - name: 创建提示用户评论
+        if: github.event_name == 'issues'
+        id: comment
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.mytoken }}
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            分析 title 和 body 内容 ..
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ----
+          emoji: heart
+      - name: 设置ruby3
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.2
+
+      - name: 设置python3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 初始化环境
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          sudo timedatectl set-timezone "Asia/Shanghai"
+          python -m pip install --upgrade pip setuptools
+      - name: 获取issue
+        if: github.event_name == 'issues'
+        id: get-issues
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // '<???>': 替换一次; '/<???>/g': 替换全局; '/<???>/gi': 替换全局并忽略大小写;
+            // \u0008 \b Backspace
+            // \u0009 \t Tab
+            // \u000A \n 换行符
+            // \u000B \v 垂直制表符
+            // \u000C \f 换页
+            // \u000D \r 回车
+            // \u0022 \" 双引号 (")
+            // \u0027 \' 单引号 (')
+            // \u005C \\ 反斜杠 (\)
+            // \u00A0    不间断空格
+            // \u2028    行分隔符
+            // \u2029    段落分隔符
+            // \uFEFF    字节顺序标记
+            var fs = require('fs'); // 引入fs模块
+            var issuenumber = ${{ toJSON(github.event.issue.number) }};
+            var issueauth = ${{ toJSON(github.event.issue.user.login) }};
+            var issuetitle = ${{ toJSON(github.event.issue.title) }};
+            var issuebody = ${{ toJSON(github.event.issue.body) }};
+            if (issuetitle != null) {
+                          issuetitle = issuetitle.replace(/\u000A|\u000D/g, "");  // 换行符,回车
+                        }
+
+                        if (issuebody != null) {
+                          // Backspace,Tab,垂直制表符,换页,回车,不间断空格,行分隔符,段落分隔符,字节顺序标记
+                          issuebody = issuebody.replace(/\u000A|\u0008|\u0009|\u000B|\u000C|\u000D|\u00A0|\u2028|\u2029|\uFEFF/g, "");
+
+                          // 容错
+                          issuebody = issuebody.replace(/：/g, ": ");
+                          issuebody = issuebody.replace(/，/g, ", ");
+                          issuebody = issuebody.replace(/“|”/g, "\"");
+                          fs.writeFileSync(`body#${issuenumber}.txt`, issuebody, { 'flag': 'w' }, (err) => { if (err) throw err; });
+
+                          var regex = /\`\`\`([\s\S]*?)\`\`\`/g;
+                          let options = issuebody.match(regex);
+                          if (options != null && options.length > 0) {
+                            fs.writeFileSync('customshell.sh', options[options.length-1].replace(/\`/g, ""), { 'flag': 'w' }, (err) => { if (err) throw err; });
+                            for(option in options) {
+                              console.log(options[option]);
+                              issuebody = issuebody.replace(options[option], "");
+                            }
+                          }
+                          // 换行符
+                          issuebody = issuebody.replace(/\u000A/g, "");
+                        }
+                        core.setOutput("issuenumber", JSON.stringify(issuenumber));
+                        core.setOutput("issueauth", JSON.stringify(issueauth));
+                        core.setOutput("issuetitle", JSON.stringify(issuetitle));
+                        core.setOutput("issuebody", JSON.stringify(issuebody));
+      - name: 设置issue到上下文
+        if: github.event_name == 'issues' && success()
+        run: |
+          echo issuenumber: '${{ steps.get-issues.outputs.issuenumber }}'
+          echo issueauth:   '${{ steps.get-issues.outputs.issueauth }}'
+          echo issuetitle:  '${{ steps.get-issues.outputs.issuetitle }}'
+          echo issuebody:   '${{ steps.get-issues.outputs.issuebody }}'
+          echo "issuenumber="${{ steps.get-issues.outputs.issuenumber }}"" >> $GITHUB_ENV
+          echo "issueauth="${{ steps.get-issues.outputs.issueauth }}"" >> $GITHUB_ENV
+          echo "issuetitle="${{ steps.get-issues.outputs.issuetitle }}"" >> $GITHUB_ENV
+          echo "issuebody="${{ steps.get-issues.outputs.issuebody }}"" >> $GITHUB_ENV
+      - name: 解析编译参数
+        shell: python
+        run: |
+          import os, re, json, shutil, string, subprocess
+
+          def set_output(name, value):
+              subprocess.call(["echo '{}={}' >> $GITHUB_ENV".format(name, value)], shell=True)
+
+          if __name__ == '__main__':
+
+              extra_cmdline = ''
+              synoinfo=''
+              driver = ''
+              dts = ''
+              iscustom='true'
+              issues='false'
+
+              try:
+                  body = {}
+                  bodyOriginal = {}
+                  if '${{ github.event_name }}' == 'issues':
+                      if '${{ env.issuetitle }}'.lower().startswith('custom'):
+                          issues = 'true'
+                          bodyOriginal = json.loads('${{ env.issuebody }}')
+                      else:
+                          iscustom = 'false'
+                  else:
+                      bodyOriginal = json.loads('${{ inputs.body }}')
+
+                  for k, v in bodyOriginal.items():
+                    body[k.lower()] = v
+
+                  if len(body) == 0:
+                      iscustom = 'false'
+                      errinfo = 'body 错误, body is null'
+                  else:
+                      # l = lambda x: x.strip() if isinstance(x, str) else str(x)
+                      if 'extra_cmdline' in body: extra_cmdline = json.dumps(body['extra_cmdline']).strip()
+                      if 'synoinfo' in body: synoinfo = json.dumps(body['synoinfo']).strip()
+                      if 'driver' in body: driver = body['driver'].strip()
+                      if 'dts' in body: dts = body['dts'].strip()
+                      set_output('issues', issues)
+                      set_output('iscustom', iscustom)
+                      set_output('extra_cmdline', extra_cmdline)
+                      set_output('synoinfo', synoinfo)
+                      set_output('driver', driver)
+                      set_output('dts', dts)
+
+
+              except Exception as e:
+                  iscustom = 'false'
+                  errinfo = 'body 错误, 不符合JSON规范 {}.'.format(e)
+                  set_output('errinfo', errinfo)
+      - name: 打印编译参数
+        run: |
+          echo issues:            '${{ env.issues }}'
+          echo iscustom:            '${{ env.iscustom }}'
+          echo extra_cmdline:            '${{ env.extra_cmdline }}'
+          echo synoinfo:            '${{ env.synoinfo }}'
+          echo driver:            '${{ env.driver }}'
+          echo dts:            '${{ env.dts }}'
+      - name: issue打标签
+        if: env.issues == 'true' && env.iscustom == 'true'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.mytoken }}
+          issue-number: ${{ env.issuenumber }}
+          labels: 'custom'
+      - name: 编译开始更新评论
+        if: env.issues == 'true' && env.iscustom == 'true'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-comment'
+          token: ${{ secrets.mytoken }}
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          update-mode: replace
+          body: |
+            ${{ env.issueauth }} 您好.
+            您自定义的 DS920+ 已开始构建. 请前往下面的 URL 查看详细信息.
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ----
+          emoji: heart
+      - name: 问题格式错误更新评论
+        if: env.issues == 'true' && env.iscustom == 'false'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-comment'
+          token: ${{ secrets.mytoken }}
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          update-mode: replace
+          body: |
+            ${{ env.issueauth }} 您好.
+            您自定义 DS920+ 所填写的信息有误, 无法触发编译, 请参考模板和错误提示对body进行修改并请重新触发编译(Close & Reopen).
+            `Error Info:`
+            `${{ env.errinfo }}`
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ----
+          emoji: confused
+      - name: 非定制编译更新评论
+        if: env.issues == 'false'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-comment'
+          token: ${{ secrets.mytoken }}
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          update-mode: replace
+          body: |
+            ${{ env.issueauth }} 您好.
+            根据 title 和 body 内容的分析, 该 Issue 并非定制 DS920+编译. 将在管理员看到后会进行回复.
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ----
+          emoji: eyes
+      - name: 创建配置文件
+        if: env.issues == 'true' && env.iscustom == 'true'
+        shell: python
+        run: |
+          import os, json
+          if __name__ == '__main__':
+            config={
+                   "extra_cmdline": {
+                   },
+                   "synoinfo": {
+                     "internalportcfg": "0xffff",
+                     "maxlanport": "7",
+                     "support_led_behavior_v2": "no",
+                     "support_led_brightness_adjustment": "no",
+                     "support_bde_internal_10g": "no",
+                     "support_disk_compatibility": "no",
+                     "support_memory_compatibility": "no"
+                   },
+                   "ramdisk_copy": {},
+                   "extensions": []
+                 }
+          if '${{ env.extra_cmdline }}' != '':  config["extra_cmdline"]=  json.loads('${{ env.extra_cmdline }}')
+          if '${{ env.synoinfo }}' != '':  config["synoinfo"]=  json.loads('${{ env.synoinfo }}')
+
+          with open('user_config.json', 'w', encoding="utf-8") as f:  f.write(json.dumps(config, indent=4))
+      - name: 打印配置文件
+        run: |
+          cat user_config.json
+      - name: 准备编译环境
+        if: env.issues == 'true' && env.iscustom == 'true'
+        run: |
+          # sudo apt update
+          sudo apt-get install -y curl bspatch jq git
+          git clone -b develop https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
+          cp -f type.sh /home/runner/redpill-load
+          cp -f user_config.json /home/runner/redpill-load/ds920p_user_config.json
+          pushd /home/runner/redpill-load
+          pip install -r requirements.txt
+          python syno.py ${{matrix.platform}} ${{steps.version.outputs.maxVersion}} 1
+          cat config/${{matrix.platform}}/${{steps.version.outputs.maxVersion}}/config.json
+          popd
+          # 切换新内核支持7.2
+          wget https://raw.githubusercontent.com/wjz304/rp-ext/main/lkms/rp-geminilake-4.4.302-prod.ko.gz
+          gunzip ./rp-geminilake-4.4.302-prod.ko.gz
+          mv ./rp-geminilake-4.4.302-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.302+.ko
+
+      - name: 添加扩展驱动
+        if: env.issues == 'true' && env.iscustom == 'true'
+        run: |
+            cd /home/runner/redpill-load
+            rpext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+            ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
+            ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
+            # ./ext-manager.sh add "${rpext}/modules/r8125/rpext-index.json"
+          if [ -n "${{ env.driver }}" ]; then
+              driver=$(echo ${{ env.driver }} | awk '{gsub(/ /,"")}1')
+              drivers=(${driver//,/ })
+              for item in ${drivers[@]}
+              do
+                  echo "${item}"
+                  if [[ ${item} = http* ]]; then
+                    ./ext-manager.sh add "${item}"
+                  fi
+              done
+          fi
+
+      - name: 编译DTB
+        if: env.issues == 'true' && env.iscustom == 'true'
+        cd /home/runner/redpill-load
+           chkurl=${{ env.dts }}
+           if [ ${{ env.dts }} ]
+           then
+                wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
+                chmod +x ./dtc
+                echo "编译DTS为DTB"
+                 wget -O ${{matrix.machine}}_ds920p.dts ${chkurl}
+                ./dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
+                EXT_PATH="`./ext/dtbstatic/make.sh ./ds920p.dtb`"
+                if [ -n "${EXT_PATH}" ]; then 
+                      echo "EXT_PATH: ${EXT_PATH}"
+                      ./ext-manager.sh add "${EXT_PATH}"
+                    else
+                      echo "loacl dtbstatic error"
+                      exit 1
+                fi
+                
+                echo "loacl localrss ..."
+                    model=${{matrix.platform}}
+                    version=${{steps.version.outputs.maxVersion}}
+    
+                    paturl=$(cat config/${model}/${version}/config.json | jq -r '.os .pat_url')
+                    patmd5=$(cat config/${model}/${version}/config.json | jq -r '.os .hash')
+                    EXT_PATH="`./ext/localrss/make.sh "${paturl}" "${patmd5}"`"
+                    if [ -n "${EXT_PATH}" ]; then 
+                      echo "EXT_PATH: ${EXT_PATH}"
+                      ./ext-manager.sh add "${EXT_PATH}"
+                    else
+                      echo "loacl localrss error"
+                      exit 1
+                    fi 
+
+           else
+                echo "不存在dts文件采用自动dtb补丁支持<=4盘"
+                lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+                ./ext-manager.sh add ${lkmext}/addons/dtbpatch/rpext-index.json
+           fi
+
+      - name: 编译引导
+        if: env.issues == 'true' && env.iscustom == 'true'
+        run: |
+          cd /home/runner/redpill-load
+          sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.302 ./build-loader.sh '${{matrix.platform}}' '${{steps.version.outputs.maxVersion}}'
+          cp -f /home/runner/redpill-load/ds920p_user_config.json /home/runner/redpill-load/images
+      - name: 上传固件GitHub
+        uses: actions/upload-artifact@master
+        if: env.issues == 'true' && env.iscustom == 'true'
+        with:
+          name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
+          path: /home/runner/redpill-load/images
+      - name: 编译结束更新评论
+        if: env.issues == 'true' && env.iscustom == 'true'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-comment'
+          token: ${{ secrets.mytoken }}
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          update-mode: replace
+          body: |
+            ${{ env.issueauth }} 您好.
+            您自定义的 DS920+ 已开始构建完成. 请前往下面的 URL 查看详细信息.
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ----
+          emoji: hooray
+      - name: 关闭问题
+        if: env.issues == 'true' && env.iscustom == 'true' && success()
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          token: ${{ secrets.mytoken }}
+          issue-number: ${{ env.issuenumber }}
+
+      - name: 编译失败更新评论
+        if: env.issues == 'true' && env.iscustom == 'true' && failure()
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'update-comment'
+          token: ${{ secrets.mytoken }}
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          update-mode: replace
+          body: |
+            ${{ env.issueauth }} 您好.
+            您自定义的 DS920+ 构建失败. 请前往下面的 URL 查看详细信息对body进行修改并请重新触发编译(Close & Reopen).
+            > ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          emoji: confused
