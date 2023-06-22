@@ -294,8 +294,8 @@ jobs:
             rpext=https://raw.githubusercontent.com/wjz304/rp-ext/master
             ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
-            # ./ext-manager.sh add "${rpext}/modules/r8125/rpext-index.json"
-          if [ -n "${{ env.driver }}" ]; then
+            #./ext-manager.sh add "${rpext}/modules/r8125/rpext-index.json"
+            if [ -n "${{ env.driver }}" ]; then
               driver=$(echo ${{ env.driver }} | awk '{gsub(/ /,"")}1')
               drivers=(${driver//,/ })
               for item in ${drivers[@]}
@@ -305,11 +305,12 @@ jobs:
                     ./ext-manager.sh add "${item}"
                   fi
               done
-          fi
+            fi
 
       - name: 编译DTB
         if: env.issues == 'true' && env.iscustom == 'true'
-        cd /home/runner/redpill-load
+        run: |
+          cd /home/runner/redpill-load
            chkurl=${{ env.dts }}
            if [ ${{ env.dts }} ]
            then
