@@ -46,7 +46,7 @@ jobs:
           cp -rf redpill-load /home/runner/
           pushd /home/runner/redpill-load
 
-          maxVersion=$(cat  ./config/configs.json | jq -r 'to_entries| .[]| select(.key == "DS920+")| .value.platforms' | jq -r 'keys[length-1]')  
+          maxVersion=$(cat  /home/runner/redpill-load/config/configs.json | jq -r 'to_entries| .[]| select(.key == "DS920+")| .value.platforms' | jq -r 'keys[length-1]')  
           echo $maxVersion
           echo "maxVersion=$(maxVersion)" >> $GITHUB_OUTPUT
 
