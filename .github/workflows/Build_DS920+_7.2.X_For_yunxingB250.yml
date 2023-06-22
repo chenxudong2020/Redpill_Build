@@ -18,7 +18,7 @@ jobs:
         include:
           - platform: DS920+
             version: 7.2.X
-            machine: 云星B250
+            machine: yunxingB250
             user: chenxudong2020
 
     steps:
