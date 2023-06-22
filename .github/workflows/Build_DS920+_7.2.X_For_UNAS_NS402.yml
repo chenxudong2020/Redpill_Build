@@ -17,7 +17,7 @@ jobs:
       matrix:
         include:
           - platform: DS920+
-            version: 7.2.0-64570
+            version: 7.2.X
             machine: UNAS_NS402
             user: chenxudong2020
 
@@ -45,10 +45,14 @@ jobs:
           sudo apt-get install -y curl bspatch jq git
           cp -rf redpill-load /home/runner/
           pushd /home/runner/redpill-load
+
+          maxVersion=$(cat  ./config/configs.json | jq -r 'to_entries| .[]| select(.key == "DS920+")| .value.platforms' | jq -r 'keys[length-1]')  
+          echo "maxVersion=$(maxVersion)" >> $GITHUB_OUTPUT
+
           # make config
           pip install -r requirements.txt
-          python syno.py ${{matrix.platform}} ${{matrix.version}} 1
-          cat config/${{matrix.platform}}/${{matrix.version}}/config.json
+          python syno.py ${{matrix.platform}} ${{maxVersion}} 1
+          cat config/${{matrix.platform}}/${{maxVersion}}/config.json
           popd
           
           cp -f type.sh /home/runner/redpill-load
@@ -95,7 +99,7 @@ jobs:
                 
                 echo "loacl localrss ..."
                     model=${{matrix.platform}}
-                    version=${{matrix.version}}
+                    version=${{maxVersion}}
     
                     paturl=$(cat config/${model}/${version}/config.json | jq -r '.os .pat_url')
                     patmd5=$(cat config/${model}/${version}/config.json | jq -r '.os .hash')
@@ -114,11 +118,11 @@ jobs:
         run: |
           cd /home/runner/redpill-load
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.302 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.302 ./build-loader.sh '${{matrix.platform}}' '${{maxVersion}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
         with:
-            name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
+            name: ${{matrix.machine}}-${{matrix.platform}}-${{maxVersion}}-b${{steps.date.outputs.now}}
             path: /home/runner/redpill-load/images
 
