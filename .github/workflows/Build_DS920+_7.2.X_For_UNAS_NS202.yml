@@ -45,7 +45,7 @@ jobs:
           sudo apt-get install -y curl bspatch jq git
 
           sh ./version.sh
-          echo "maxVersion=$(cat version.txt)" >> $GITHUB_ENV
+          echo "maxVersion='$(cat version.txt)'" >> $GITHUB_ENV
 
           echo "--------------------------------------"
           echo ${{env.maxVersion}}
