@@ -48,6 +48,7 @@ jobs:
           maxVersion=$(cat version.txt)
           echo "maxVersion=$maxVersion" >> $GITHUB_OUTPUT
           echo "------------------------------------------------------------------"
+          echo $maxVersion
           echo ${{env.maxVersion}}
           echo "------------------------------------------------------------------"
 
