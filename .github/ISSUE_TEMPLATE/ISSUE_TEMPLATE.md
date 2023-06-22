@@ -17,9 +17,8 @@ assignees: ''
         "mac2": "C4834F275ACC",
         "netif_num": 2
       },
-      "driver":"https://raw.githubusercontent.com/pocopico/rp-ext/master/e1000e/rpext-index.json,
-                https://raw.githubusercontent.com/pocopico/rp-ext/master/r8168/rpext-index.json,
-                https://raw.githubusercontent.com/chenxudong2020/synology-r8125/main/r8125/rpext-index.json",
+      "driver":"https://raw.githubusercontent.com/wjz304/rp-ext/master/modules/r8125/rpext-index.json,
+                https://raw.githubusercontent.com/wjz304/rp-ext/main/modules/igc/rpext-index.json",
       "dts":"https://github.com/chenxudong2020/Redpill_Build/raw/master/dts/UNAS_T401P_ds920p.dts.txt"       
       
     
