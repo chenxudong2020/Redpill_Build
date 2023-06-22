@@ -272,10 +272,9 @@ jobs:
       - name: 准备编译环境
         if: env.issues == 'true' && env.iscustom == 'true'
         run: |
-          # sudo apt update
           sudo apt-get install -y curl bspatch jq git
-          cp -f type.sh /home/runner/redpill-load
-          cp -f user_config.json /home/runner/redpill-load/ds920p_user_config.json
+          \cp type.sh /home/runner/redpill-load
+          \cp user_config.json /home/runner/redpill-load/ds920p_user_config.json
           pushd /home/runner/redpill-load
           pip install -r requirements.txt
           python syno.py ${{matrix.platform}} ${{steps.version.outputs.maxVersion}} 1
