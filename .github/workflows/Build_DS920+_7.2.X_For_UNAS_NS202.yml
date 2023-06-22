@@ -45,8 +45,10 @@ jobs:
           sudo apt-get install -y curl bspatch jq git
 
           sh ./version.sh
-          maxVersion=$(cat version.txt)
-          echo "maxVersion=${maxVersion}" >> $GITHUB_ENV
+          echo "maxVersion=$(cat version.txt)" >> $GITHUB_ENV
+
+          echo "--------------------------------------"
+          echo ${{env.maxVersion}}
 
           # git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
           cp -rf redpill-load /home/runner/
