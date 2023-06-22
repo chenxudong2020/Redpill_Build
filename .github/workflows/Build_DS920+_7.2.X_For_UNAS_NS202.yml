@@ -47,9 +47,9 @@ jobs:
           sh ./version.sh
           maxVersion=$(cat version.txt)
           echo "maxVersion=$maxVersion" >> $GITHUB_OUTPUT
-
+          echo "------------------------------------------------------------------"
           echo ${{env.maxVersion}}
-
+          echo "------------------------------------------------------------------"
 
           # git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
           cp -rf redpill-load /home/runner/
