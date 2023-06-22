@@ -51,8 +51,8 @@ jobs:
 
           # make config
           pip install -r requirements.txt
-          python syno.py ${{matrix.platform}} ${{maxVersion}} 1
-          cat config/${{matrix.platform}}/${{maxVersion}}/config.json
+          python syno.py ${{matrix.platform}} ${{env.maxVersion}} 1
+          cat config/${{matrix.platform}}/${{env.maxVersion}}/config.json
           popd
           
           cp -f type.sh /home/runner/redpill-load
@@ -99,7 +99,7 @@ jobs:
                 
                 echo "loacl localrss ..."
                     model=${{matrix.platform}}
-                    version=${{maxVersion}}
+                    version=${{env.maxVersion}}
     
                     paturl=$(cat config/${model}/${version}/config.json | jq -r '.os .pat_url')
                     patmd5=$(cat config/${model}/${version}/config.json | jq -r '.os .hash')
@@ -118,11 +118,11 @@ jobs:
         run: |
           cd /home/runner/redpill-load
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.302 ./build-loader.sh '${{matrix.platform}}' '${{maxVersion}}'
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.302 ./build-loader.sh '${{matrix.platform}}' '${{env.maxVersion}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
         with:
-            name: ${{matrix.machine}}-${{matrix.platform}}-${{maxVersion}}-b${{steps.date.outputs.now}}
+            name: ${{matrix.machine}}-${{matrix.platform}}-${{env.maxVersion}}-b${{steps.date.outputs.now}}
             path: /home/runner/redpill-load/images
 
