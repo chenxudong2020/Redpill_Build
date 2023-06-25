@@ -1,6 +1,8 @@
 name: Build DS920+ 7.2.X_For_UNAS_T201P
 
 on:
+  schedule:
+    - cron: '0 18 * * *'
   workflow_dispatch:
     inputs:
       clean_cache:
