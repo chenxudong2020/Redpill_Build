@@ -67,12 +67,13 @@ jobs:
             rpext=https://raw.githubusercontent.com/wjz304/rp-ext/master
             ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
-            ./ext-manager.sh add "${rpext}/modules/r8125/rpext-index.json"
-          
+            ./ext-manager.sh add "${rpext}/modules/e1000e/rpext-index.json"
+             ./ext-manager.sh add "${rpext}/modules/igb/rpext-index.json"
+             ./ext-manager.sh add "${rpext}/modules/r8169/rpext-index.json"
       - name: 编译DTB
         run: |
           cd /home/runner/redpill-load
-          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+          chkurl=https://http:yanfeinet.cn:8802/dsp.dts
           HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
           if [ ${HTTP_CODE} -ne 200 ]
           then
