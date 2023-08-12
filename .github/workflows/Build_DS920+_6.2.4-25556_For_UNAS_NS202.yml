@@ -67,10 +67,12 @@ jobs:
             rpext=https://raw.githubusercontent.com/wjz304/rp-ext/master
             ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
-       - name: 编译DTB
+            ./ext-manager.sh add "${rpext}/modules/igb/rpext-index.json"
+          
+      - name: 编译DTB
         run: |
           cd /home/runner/redpill-load
-          chkurl=https://http:yanfeinet.cn:8802/dsp.dts
+          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
           HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
           if [ ${HTTP_CODE} -ne 200 ]
           then
@@ -79,7 +81,7 @@ jobs:
             ./ext-manager.sh add ${lkmext}/addons/dtbpatch/rpext-index.json
           else
             echo "下载DTS文件"
-            wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+            wget http://yanfeinet.cn:8802/dsp.dts
             wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
             chmod +x ./dtc
             echo "编译DTS为DTB"
@@ -122,3 +124,4 @@ jobs:
         with:
             name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
             path: /home/runner/redpill-load/images
+
