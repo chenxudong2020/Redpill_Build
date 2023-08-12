@@ -72,7 +72,7 @@ jobs:
       - name: 编译DTB
         run: |
           cd /home/runner/redpill-load
-          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+          chkurl=http://yanfeinet.cn:8802:/UNAS_NS202_ds920p.dts
           HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
           if [ ${HTTP_CODE} -ne 200 ]
           then
