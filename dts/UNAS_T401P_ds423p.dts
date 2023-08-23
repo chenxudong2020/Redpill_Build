@@ -222,7 +222,7 @@
 		pcie_root = "00:13.0,00.0";
 		port_type = "ssdcache";
 	};
-    nvme_slot@1 {
+    	nvme_slot@2 {
 		pcie_root = "00:13.1,00.0";
 		port_type = "ssdcache";
 	};
