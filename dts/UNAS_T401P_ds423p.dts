@@ -182,7 +182,7 @@
 		};
 	};
     
-    internal_slot@1 {
+    	internal_slot@1 {
 		protocol_type = "sata";
 
 		ahci {
@@ -190,7 +190,7 @@
 			ata_port = <0x00>;
 		};
 	};
-    internal_slot@2 {
+    	internal_slot@2 {
 		protocol_type = "sata";
 
 		ahci {
