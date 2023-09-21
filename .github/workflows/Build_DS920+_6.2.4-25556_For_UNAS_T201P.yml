@@ -69,6 +69,8 @@ jobs:
             ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
             ./ext-manager.sh add "${rpext}/modules/r8169/rpext-index.json"
             ./ext-manager.sh add "${rpext}/modules/igb/rpext-index.json"
+            ./ext-manager.sh add "${rpext}/modules/r8168/rpext-index.json"
+            ./ext-manager.sh add "${rpext}/modules/e1000e/rpext-index.json"
              
           
       - name: 编译DTB
