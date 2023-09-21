@@ -1,4 +1,4 @@
-name: Build DS918+ 6.2.4-25556 For UNAS_NS202
+name: Build DS1019+ 6.2.4-25556 For UNAS_NS202
 
 on:
   schedule:
@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: DS918+
+          - platform: DS1019+
             version: 6.2.4-25556
             machine: UNAS_NS202
             user: chenxudong2020
@@ -69,8 +69,9 @@ jobs:
             ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
             ./ext-manager.sh add "${rpext}/modules/r8169/rpext-index.json"
             ./ext-manager.sh add "${rpext}/modules/igb/rpext-index.json"
-             
-          
+            ./ext-manager.sh add "${rpext}/modules/r8168/rpext-index.json" 
+            ./ext-manager.sh add "${rpext}/modules/e1000e/rpext-index.json"
+            ./ext-manager.sh add "${rpext}/modules/misc/rpext-index.json"
       - name: 编译DTB
         run: |
           cd /home/runner/redpill-load
