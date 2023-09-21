@@ -1,4 +1,4 @@
-name: Build RS4021xs+ 6.2.4-25556 For UNAS_NS202
+name: Build RS1619xs+ 6.2.4-25556 For UNAS_NS202
 
 on:
   schedule:
@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: RS4021xs+
+          - platform: RS1619xs+
             version: 6.2.4-25556
             machine: UNAS_NS202
             user: chenxudong2020
