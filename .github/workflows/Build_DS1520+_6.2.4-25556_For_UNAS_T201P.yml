@@ -1,4 +1,4 @@
-name: Build DS1520+ 7.0.1-42218 For UNAS_T201P
+name: Build DS1520+ 6.2.4-25556 For UNAS_T201P
 
 on:
   schedule:
