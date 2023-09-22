@@ -1,4 +1,4 @@
-name: Build DS1520+ 6.2.4-25556 For UNAS_NS202
+name: Build DS3615xs 7.0.1-42218 For UNAS_NS202
 
 on:
   schedule:
@@ -18,8 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: DS1520+
-            version: 6.2.4-25556
+          - platform: DS3615xs
+            version: 7.0.1-42218
             machine: UNAS_NS202
             user: chenxudong2020
 
