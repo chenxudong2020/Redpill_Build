@@ -1,4 +1,4 @@
-name: Build DS920+ 7.0.1-42218 For UNAS_NS202
+name: Build DS920+ 7.0.1-42218 
 
 on:
   schedule:
