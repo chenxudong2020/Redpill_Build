@@ -1,4 +1,4 @@
-name: Build DS3615xs 7.0.1-42218
+name: Build DS1520+ 7.0.1-42218
 
 on:
   schedule:
@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: DS3615xs
+          - platform: DS1520+
             version: 7.0.1-42218
-            machine: UNAS_NS202
-            user: chenxudong2020
+            machine: NAS
+            user: NAS
 
     steps:
       - name: 检出项目文件
