@@ -19,7 +19,7 @@ jobs:
       matrix:
         include:
           - platform: DS1520+
-            version: 6.2.4-25556
+            version: 6.2.3-25426
             machine: UNAS_NS202
             user: chenxudong2020
 
