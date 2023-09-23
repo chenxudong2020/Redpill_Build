@@ -21,7 +21,7 @@ jobs:
           - platform: DS1520+
             version: 7.0.1-42218
             machine: NAS
-            user: NAS
+            user: chenxudong2020
 
     steps:
       - name: 检出项目文件
