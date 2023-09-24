@@ -1,4 +1,4 @@
-name: Build DS918+ 7.0.1-42218
+name: Build DS918+ 7.0.1-42218 
 
 on:
   schedule:
@@ -71,10 +71,8 @@ jobs:
           ./ext-manager.sh add 'https://raw.githubusercontent.com/pocopico/rp-ext/master/igb/rpext-index.json'
           ./ext-manager.sh add 'https://raw.githubusercontent.com/pocopico/rp-ext/master/e1000/rpext-index.json'
           ./ext-manager.sh add 'https://raw.githubusercontent.com/pocopico/rp-ext/master/e1000e/rpext-index.json'
-  
-     
       - name: 编译DTB
-       run: |
+        run: |
           cd /home/runner/redpill-load
           # 容错
           chmod +x type.sh && ./type.sh
