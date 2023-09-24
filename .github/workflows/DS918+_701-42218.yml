@@ -93,7 +93,7 @@ jobs:
                        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                        echo ${key}
                       ./ext-manager.sh _update_platform_exts ${key} pocopico.dtb
-       -  else
+        -  else
                        echo "加载原DTB驱动"
                       ./ext-manager.sh add https://raw.githubusercontent.com/pocopico/rp-ext/master/redpill-dtb-static/rpext-index.json
                       echo "更新原DTB驱动"
