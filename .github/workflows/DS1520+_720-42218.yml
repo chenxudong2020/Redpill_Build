@@ -1,4 +1,4 @@
-name: Build DS1621+ 7.2.X
+name: Build DS1520+ 7.2.0
 
 on:
   schedule:
@@ -18,8 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: DS1621+
-            version: 7.2.X
+          - platform: DS1520+
+            version: 7.2.0
             machine: UNAS_NS202
             user: chenxudong2020
 
