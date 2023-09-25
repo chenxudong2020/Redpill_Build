@@ -174,7 +174,7 @@ ata_port = <0x0>;
 	};
 
 	nvme_slot@1 {
-        pcie_root = "00:13.0,00.0";
+                pcie_root = "00:13.0,00.0";
 		port_type = "ssdcache";
 	};
 
