@@ -1,8 +1,6 @@
-name: Build DS920+ 7.2.X_For_UNAS_NS202
+name: Build DS920+ 7.2.X_For_云星B250
 
 on:
-  schedule:
-    - cron: '0 18 * * *'
   workflow_dispatch:
     inputs:
       clean_cache:
@@ -20,7 +18,7 @@ jobs:
         include:
           - platform: DS920+
             version: 7.2.X
-            machine: UNAS_NS202
+            machine: yunxingB250
             user: chenxudong2020
 
     steps:
