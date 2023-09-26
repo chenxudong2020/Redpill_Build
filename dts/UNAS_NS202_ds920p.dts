@@ -3,9 +3,9 @@
 / {
 	compatible = "Synology";
 	model = "synology_geminilake_920+";
-	version = <0x01>;
-	syno_spinup_group = <0x02 0x01 0x01>;
-	syno_spinup_group_delay = <0x0b>;
+	version = <0x1>;
+	syno_spinup_group = <0x2 0x1 0x1>;
+	syno_spinup_group_delay = <0xb>;
 	syno_hdd_powerup_seq = "true";
 	syno_cmos_reg_secure_flash = <0x66>;
 	syno_cmos_reg_secure_boot = <0x68>;
@@ -17,53 +17,53 @@
 		pmp_slot@1 {
 
 			libata {
-				EMID = <0x00>;
-				pmp_link = <0x00>;
+				EMID = <0x0>;
+				pmp_link = <0x0>;
 			};
 		};
 
 		pmp_slot@2 {
 
 			libata {
-				EMID = <0x00>;
-				pmp_link = <0x01>;
+				EMID = <0x0>;
+				pmp_link = <0x1>;
 			};
 		};
 
 		pmp_slot@3 {
 
 			libata {
-				EMID = <0x00>;
-				pmp_link = <0x02>;
+				EMID = <0x0>;
+				pmp_link = <0x2>;
 			};
 		};
 
 		pmp_slot@4 {
 
 			libata {
-				EMID = <0x00>;
-				pmp_link = <0x03>;
+				EMID = <0x0>;
+				pmp_link = <0x3>;
 			};
 		};
 
 		pmp_slot@5 {
 
 			libata {
-				EMID = <0x00>;
-				pmp_link = <0x04>;
+				EMID = <0x0>;
+				pmp_link = <0x4>;
 			};
 		};
 	};
 
 	internal_slot@1 {
 		protocol_type = "sata";
-		power_pin_gpio = <0x14 0x00>;
-		detect_pin_gpio = <0x23 0x01>;
+		power_pin_gpio = <0x14 0x0>;
+		detect_pin_gpio = <0x23 0x1>;
 		led_type = "lp3943";
 
 		ahci {
-          pcie_root = "00:17.0";
-          ata_port = <0x00>;
+           pcie_root = "00:13.0";
+           ata_port = <0x0>;
 		};
 
 		led_green {
@@ -77,13 +77,13 @@
 
 	internal_slot@2 {
 		protocol_type = "sata";
-		power_pin_gpio = <0x15 0x00>;
-		detect_pin_gpio = <0x24 0x01>;
+		power_pin_gpio = <0x15 0x0>;
+		detect_pin_gpio = <0x24 0x1>;
 		led_type = "lp3943";
 
 		ahci {
-            pcie_root = "00:17.0";
-            ata_port = <0x01>;
+          pcie_root = "00:13.0";
+          ata_port = <0x1>;
 		};
 
 		led_green {
@@ -97,13 +97,13 @@
 
 	internal_slot@3 {
 		protocol_type = "sata";
-		power_pin_gpio = <0x16 0x00>;
-		detect_pin_gpio = <0x25 0x01>;
+		power_pin_gpio = <0x16 0x0>;
+		detect_pin_gpio = <0x25 0x1>;
 		led_type = "lp3943";
 
 		ahci {
-			pcie_root = "00:17.0";
-			ata_port = <0x02>;
+			pcie_root = "00:13.0";
+			ata_port = <0x2>;
 		};
 
 		led_green {
@@ -117,13 +117,13 @@
 
 	internal_slot@4 {
 		protocol_type = "sata";
-		power_pin_gpio = <0x17 0x00>;
-		detect_pin_gpio = <0x26 0x01>;
+		power_pin_gpio = <0x17 0x0>;
+		detect_pin_gpio = <0x26 0x1>;
 		led_type = "lp3943";
 
 		ahci {
-			pcie_root = "00:17.0";
-			ata_port = <0x03>;
+			pcie_root = "00:13.0";
+			ata_port = <0x3>;
 		};
 
 		led_green {
@@ -139,14 +139,14 @@
 
 		ahci {
 			pcie_root = "00:13.0,00.0";
-			ata_port = <0x03>;
+			ata_port = <0x3>;
 		};
 	};
 
 	usb_slot@1 {
 
 		vbus {
-			syno_gpio = <0x1d 0x01>;
+			syno_gpio = <0x1d 0x1>;
 		};
 
 		usb2 {
@@ -161,7 +161,7 @@
 	usb_slot@2 {
 
 		vbus {
-			syno_gpio = <0x1e 0x01>;
+			syno_gpio = <0x1e 0x1>;
 		};
 
 		usb2 {
@@ -174,7 +174,7 @@
 	};
 
 	nvme_slot@1 {
-                pcie_root = "00:13.0,00.0";
+    pcie_root = "00:13.0,00.0";
 		port_type = "ssdcache";
 	};
 
