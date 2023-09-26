@@ -1,4 +1,4 @@
-name: Build DS1520+ 7.0.1-42218 For UNAS_NS202
+name: Build DS720+ 7.0.1-42218 For UNAS_NS202
 
 on:
   schedule:
@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: DS1520+
+          - platform: DS720+
             version: 7.0.1-42218
             machine: UNAS_NS202
             user: chenxudong2020
