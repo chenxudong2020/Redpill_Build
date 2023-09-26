@@ -62,8 +62,8 @@
 		led_type = "lp3943";
 
 		ahci {
-pcie_root = "00:17.0";
-ata_port = <0x02>;
+          pcie_root = "00:17.0";
+          ata_port = <0x00>;
 		};
 
 		led_green {
@@ -83,7 +83,7 @@ ata_port = <0x02>;
 
 		ahci {
             pcie_root = "00:17.0";
-            ata_port = <0x03>;
+            ata_port = <0x01>;
 		};
 
 		led_green {
@@ -103,7 +103,7 @@ ata_port = <0x02>;
 
 		ahci {
 			pcie_root = "00:17.0";
-			ata_port = <0x04>;
+			ata_port = <0x02>;
 		};
 
 		led_green {
@@ -123,7 +123,7 @@ ata_port = <0x02>;
 
 		ahci {
 			pcie_root = "00:17.0";
-			ata_port = <0x05>;
+			ata_port = <0x03>;
 		};
 
 		led_green {
@@ -174,12 +174,12 @@ ata_port = <0x02>;
 	};
 
 	nvme_slot@1 {
-                pcie_root = "00:1d.0,00.0";
+                pcie_root = "00:13.0,00.0";
 		port_type = "ssdcache";
 	};
 
 	nvme_slot@2 {
-		pcie_root = "00:1d.1,00.0";
+		pcie_root = "00:13.1,00.0";
 		port_type = "ssdcache";
 	};
 };
