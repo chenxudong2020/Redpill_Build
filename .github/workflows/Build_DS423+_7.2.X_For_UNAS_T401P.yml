@@ -1,4 +1,4 @@
-name: Build DS920+ 6.2.4-25556 For UNAS_NS402
+name: Build DS423+ 7.2.X_For_UNAS_T401P
 
 on:
   schedule:
@@ -18,9 +18,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: DS920+
-            version: 6.2.4-25556
-            machine: UNAS_NS402
+          - platform: DS423+
+            version: 7.2.X
+            machine: UNAS_T401P
             user: chenxudong2020
 
     steps:
@@ -34,6 +34,13 @@ jobs:
         run: |
           echo "today=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
           echo "now=$(date +'%s')" >> $GITHUB_OUTPUT
+
+
+      - name: 获取版本
+        id: version
+        run: |
+          sh ./version.sh
+          echo "maxVersion=$(cat version.txt)" >> $GITHUB_OUTPUT
         
       - name: 获取项目描述
         id: desc
@@ -45,34 +52,40 @@ jobs:
         run: |
           # sudo apt update
           sudo apt-get install -y curl bspatch jq git
+ 
+
           # git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
           cp -rf redpill-load /home/runner/
           pushd /home/runner/redpill-load
           # make config
           pip install -r requirements.txt
-          python syno.py ${{matrix.platform}} ${{matrix.version}} 1
-          cat config/${{matrix.platform}}/${{matrix.version}}/config.json
+          python syno.py ${{matrix.platform}} ${{steps.version.outputs.maxVersion}} 1
+          cat config/${{matrix.platform}}/${{steps.version.outputs.maxVersion}}/config.json
           popd
           
           cp -f type.sh /home/runner/redpill-load
-          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
-          # 使用wjz304的lkm
-          wget https://raw.githubusercontent.com/wjz304/rp-ext/main/lkms/rp-geminilake-4.4.59-prod.ko.gz
-          gunzip ./rp-geminilake-4.4.59-prod.ko.gz
-          mv ./rp-geminilake-4.4.59-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.59+.ko
+          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds423p_user_config.json -O /home/runner/redpill-load/ds423p_user_config.json
+           # 切换新内核支持7.2
+          wget https://raw.githubusercontent.com/wjz304/rp-ext/main/lkms/rp-geminilake-4.4.302-prod.ko.gz
+          gunzip ./rp-geminilake-4.4.302-prod.ko.gz
+          mv ./rp-geminilake-4.4.302-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.302+.ko
           
       - name: 添加扩展驱动
         run: |
             cd /home/runner/redpill-load
-            rpext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+            rpext=https://raw.githubusercontent.com/chenxudong2020/rp-ext/master
             ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
+            ./ext-manager.sh add "${rpext}/addons/early-telnet/rpext-index.json"
+            ./ext-manager.sh add "${rpext}/addons/hdddb/rpext-index.json"
+            ./ext-manager.sh add "${rpext}/addons/localrss/rpext-index.json"
+            ./ext-manager.sh add "${rpext}/addons/wol/rpext-index.json"
             ./ext-manager.sh add "${rpext}/modules/r8125/rpext-index.json"
           
       - name: 编译DTB
         run: |
               cd /home/runner/redpill-load
-              chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+              chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds423p.dts
               HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
               if [ ${HTTP_CODE} -ne 200 ]
               then
@@ -81,13 +94,13 @@ jobs:
                 ./ext-manager.sh add ${lkmext}/addons/dtbpatch/rpext-index.json
               else
                 echo "下载DTS文件"
-                wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+                wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds423p.dts
                 wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
                 chmod +x ./dtc
                 echo "编译DTS为DTB"
-                ./dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
+                ./dtc -I dts -O dtb -o ./ds423p.dtb ./${{matrix.machine}}_ds423p.dts
         
-                EXT_PATH="`./ext/dtbstatic/make.sh ./ds920p.dtb`"
+                EXT_PATH="`./ext/dtbstatic/make.sh ./ds423p.dtb`"
                 if [ -n "${EXT_PATH}" ]; then 
                       echo "EXT_PATH: ${EXT_PATH}"
                       ./ext-manager.sh add "${EXT_PATH}"
@@ -98,7 +111,7 @@ jobs:
                 
                 echo "loacl localrss ..."
                     model=${{matrix.platform}}
-                    version=${{matrix.version}}
+                    version=${{steps.version.outputs.maxVersion}}
     
                     paturl=$(cat config/${model}/${version}/config.json | jq -r '.os .pat_url')
                     patmd5=$(cat config/${model}/${version}/config.json | jq -r '.os .hash')
@@ -117,11 +130,11 @@ jobs:
         run: |
           cd /home/runner/redpill-load
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          sudo BRP_JUN_MOD=0 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.59 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds423p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.302 ./build-loader.sh '${{matrix.platform}}' '${{steps.version.outputs.maxVersion}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
         with:
-            name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
+            name: ${{matrix.machine}}-${{matrix.platform}}-${{steps.version.outputs.maxVersion}}-b${{steps.date.outputs.now}}
             path: /home/runner/redpill-load/images
 
