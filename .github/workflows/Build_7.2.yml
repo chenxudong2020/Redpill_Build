@@ -294,7 +294,8 @@ jobs:
             ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/early-telnet/rpext-index.json"
-            ./ext-manager.sh add "${rpext}/addons/hdddb/rpext-index.json"
+            rpext_chenxudong2020=https://raw.githubusercontent.com/chenxudong2020/rp-ext/master
+            ./ext-manager.sh add "${rpext_chenxudong2020}/addons/hdddb/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/nvmevolume/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/wol/rpext-index.json"
             if [ -n "${{ env.driver }}" ]; then

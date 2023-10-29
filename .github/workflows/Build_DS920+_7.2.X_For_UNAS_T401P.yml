@@ -73,7 +73,7 @@ jobs:
       - name: 添加扩展驱动
         run: |
             cd /home/runner/redpill-load
-            rpext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+            rpext=https://raw.githubusercontent.com/chenxudong2020/rp-ext/master
             ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/early-telnet/rpext-index.json"
