@@ -41,7 +41,7 @@ jobs:
         run: |
           sudo mkdir -p ${{ github.workspace }}/unas-imgs
           machinestring="${{matrix.machine}}"
-          arr=(`echo $machinestring | tr ',' ' '`)
+          arr=($(echo machinestring | sed 's/,/ /g'))
           for machine in arr
           do
                 #环境处理
