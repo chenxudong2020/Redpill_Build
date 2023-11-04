@@ -166,5 +166,7 @@ jobs:
             tag: "v${{steps.version.outputs.maxVersion}}"
             body: |
                 ${{ github.event.head_commit.message }}
-                ${{matrix.platform}} ${{matrix.version}} ${{matrix.machine}}
+                ${{matrix.platform}} ${{matrix.version}}
+            replacesArtifacts: true
+
 
