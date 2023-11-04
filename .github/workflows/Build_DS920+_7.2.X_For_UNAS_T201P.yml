@@ -9,6 +9,22 @@ on:
         description: 'Clear caches'
         required: false
         type: boolean
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
+    branches:
+      - main
+      - release/**
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
+
+permissions:
+  contents: write
 
 jobs:
   build:
