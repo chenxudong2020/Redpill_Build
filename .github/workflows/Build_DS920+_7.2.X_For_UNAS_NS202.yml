@@ -160,13 +160,14 @@ jobs:
         if: ${{matrix.machine}} != ''
         with:
             artifacts: "${{ github.workspace }}/unas-imgs/*.zip"
-            #bodyFile: "/source/README.md"
+            bodyFile: "README.MD"
             allowUpdates: true
             generateReleaseNotes: false
             tag: "v${{steps.version.outputs.maxVersion}}"
             body: |
                 ${{ github.event.head_commit.message }}
                 ${{matrix.platform}} ${{matrix.version}}
+                ${{env.description}}
             replacesArtifacts: true
 
 
