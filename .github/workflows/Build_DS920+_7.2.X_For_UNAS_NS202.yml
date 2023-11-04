@@ -22,7 +22,8 @@ on:
       - 'README.md'
       - 'CHANGELOG.md'
       - 'LICENSE'
-
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
