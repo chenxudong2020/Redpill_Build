@@ -39,7 +39,7 @@ jobs:
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/README.MD -O /home/runner/desc.txt
           echo "description=$(cat /home/runner/desc.txt)" >> $GITHUB_OUTPUT
                           
-      - name: 编译DTB
+      - name: 编译
         run: |
           sudo mkdir -p ${{ github.workspace }}/unas-imgs
           for machine in ${machineList}
