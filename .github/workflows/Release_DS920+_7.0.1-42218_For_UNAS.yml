@@ -36,36 +36,34 @@ jobs:
         run: |
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/README.MD -O /home/runner/desc.txt
           echo "description=$(cat /home/runner/desc.txt)" >> $GITHUB_OUTPUT
-        
-      - name: 环境准备
-        run: |
-           sudo apt-get install -y curl bspatch jq git
-           git clone -b develop https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
-           cp -f type.sh /home/runner/redpill-load
-           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
-           git clone --recursive https://github.com/fbelavenuto/redpill-lkm.git
-           cd ./redpill-lkm
-           ./compile-lkms.sh
-           cd ..
-           zip -9 lkm.zip -j ./redpill-lkm/output/*
-           mkdir lkmdir
-           unzip lkm.zip -d ./lkmdir
-           gunzip ./lkmdir/rp-geminilake-4.4.180-prod.ko.gz
-           mv ./lkmdir/rp-geminilake-4.4.180-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
-          
-      - name: 添加扩展驱动
-        run: |
-          cd /home/runner/redpill-load 
-          ./ext-manager.sh add 'https://github.com/pocopico/rp-ext/raw/main/redpill-boot-wait/rpext-index.json'
-          ./ext-manager.sh add 'https://github.com/jumkey/redpill-load/raw/develop/redpill-misc/rpext-index.json'
-          ./ext-manager.sh add 'https://github.com/pocopico/redpill-load/raw/develop/redpill-acpid/rpext-index.json'
-          ./ext-manager.sh add 'https://raw.githubusercontent.com/pocopico/rp-ext/master/r8125/rpext-index.json'
-          
+                          
       - name: 编译DTB
         run: |
           cd ${{ github.workspace }}/unas-imgs
           for machine in ${{matrix.machine}}
           do
+                #环境处理
+                sudo apt-get install -y curl bspatch jq git
+                git clone -b develop https://github.com/jumkey/redpill-load.git /home/runner/redpill-load
+                cp -f type.sh /home/runner/redpill-load
+                wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${machine}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
+                git clone --recursive https://github.com/fbelavenuto/redpill-lkm.git
+                cd ./redpill-lkm
+                ./compile-lkms.sh
+                cd ..
+                zip -9 lkm.zip -j ./redpill-lkm/output/*
+                mkdir lkmdir
+                unzip lkm.zip -d ./lkmdir
+                gunzip ./lkmdir/rp-geminilake-4.4.180-prod.ko.gz
+                mv ./lkmdir/rp-geminilake-4.4.180-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.180+.ko
+
+                #添加驱动
+                cd /home/runner/redpill-load 
+                ./ext-manager.sh add 'https://github.com/pocopico/rp-ext/raw/main/redpill-boot-wait/rpext-index.json'
+                ./ext-manager.sh add 'https://github.com/jumkey/redpill-load/raw/develop/redpill-misc/rpext-index.json'
+                ./ext-manager.sh add 'https://github.com/pocopico/redpill-load/raw/develop/redpill-acpid/rpext-index.json'
+                ./ext-manager.sh add 'https://raw.githubusercontent.com/pocopico/rp-ext/master/r8125/rpext-index.json'
+
                 cd /home/runner/redpill-load
                 # 容错
                 chmod +x type.sh && ./type.sh
