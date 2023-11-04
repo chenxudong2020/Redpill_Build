@@ -9,6 +9,19 @@ on:
         description: 'Clear caches'
         required: false
         type: boolean
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
+    branches:
+      - main
+      - release/**
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
 
 jobs:
   build:
@@ -137,4 +150,15 @@ jobs:
         with:
             name: ${{matrix.machine}}-${{matrix.platform}}-${{steps.version.outputs.maxVersion}}-b${{steps.date.outputs.now}}
             path: /home/runner/redpill-load/images
-
+      - uses: ncipollo/release-action@v1
+        id: release_packages
+        if: ${{matrix.machine}} != ''
+        with:
+            artifacts: "${{ github.workspace }}/unas-imgs/*.img"
+            #bodyFile: "/source/README.md"
+            allowUpdates: true
+            generateReleaseNotes: false
+            tag: "v${{steps.version.outputs.maxVersion}}"
+            body: |
+                ${{ github.event.head_commit.message }}
+                ${{matrix.platform}} ${{matrix.version}} ${{matrix.machine}}            
