@@ -146,7 +146,8 @@ jobs:
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
           sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.302 ./build-loader.sh '${{matrix.platform}}' '${{steps.version.outputs.maxVersion}}'
           mkdir -p ${{ github.workspace }}/unas-imgs/
-          \cp -rf /home/runner/redpill-load/images/* ${{ github.workspace }}/unas-imgs/
+          zip -r ${{matrix.platform}}_${{matrix.version}}_${{matrix.machine}}.zip ./*
+          \cp -rf /home/runner/redpill-load/images/*.zip ${{ github.workspace }}/unas-imgs/
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
@@ -157,7 +158,7 @@ jobs:
         id: release_packages
         if: ${{matrix.machine}} != ''
         with:
-            artifacts: "${{ github.workspace }}/unas-imgs/*.img"
+            artifacts: "${{ github.workspace }}/unas-imgs/*.zip"
             #bodyFile: "/source/README.md"
             allowUpdates: true
             generateReleaseNotes: false
