@@ -163,7 +163,7 @@ jobs:
             #bodyFile: "/source/README.md"
             allowUpdates: true
             generateReleaseNotes: false
-            tag: "v${{ env.today }}"
+            tag: "v${{ steps.date.outputs.today }}"
             body: |
                 ${{ github.event.head_commit.message }}
                 ${{matrix.platform}} ${{matrix.version}} ${{matrix.machine}}
