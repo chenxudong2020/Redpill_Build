@@ -39,7 +39,7 @@ jobs:
                           
       - name: 编译DTB
         run: |
-          cd ${{ github.workspace }}/unas-imgs
+          sudo mkdir -p ${{ github.workspace }}/unas-imgs
           for machine in ${{matrix.machine}}
           do
                 #环境处理
