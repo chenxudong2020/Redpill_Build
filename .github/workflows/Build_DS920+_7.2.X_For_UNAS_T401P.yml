@@ -138,3 +138,15 @@ jobs:
             name: ${{matrix.machine}}-${{matrix.platform}}-${{steps.version.outputs.maxVersion}}-b${{steps.date.outputs.now}}
             path: /home/runner/redpill-load/images
 
+      - uses: ncipollo/release-action@v1
+          id: release_packages
+          if: ${{matrix.machine}} != ''
+          with:
+              artifacts: "/home/runner/redpill-load/images/*.img"
+              #bodyFile: "/source/README.md"
+              allowUpdates: true
+              generateReleaseNotes: false
+              tag: "v${{ env.today }}"
+              body: |
+                ${{ github.event.head_commit.message }}
+                ${{matrix.platform}} ${{matrix.version}} ${{matrix.machine}}
