@@ -18,7 +18,7 @@ jobs:
         include:
           - platform: DS920+
             version: 7.0.1-42218
-            machine: UNAS_NS202,UNAS_NS402,UNAS_T201P,UNAS_T401P
+            machine: UNAS_NS202 UNAS_NS402 UNAS_T201P UNAS_T401P
             user: chenxudong2020
 
     steps:
@@ -40,8 +40,7 @@ jobs:
       - name: 编译DTB
         run: |
           sudo mkdir -p ${{ github.workspace }}/unas-imgs
-          
-          for machine in "${{ matrix.machine }}"
+          for machine in (${{ matrix.machine }})
           do
                 #环境处理
                 echo "-------------------------------------------------------"
