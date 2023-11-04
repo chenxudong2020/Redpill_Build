@@ -1,4 +1,4 @@
-name: Build DS920+ 7.0.1-42218 For UNAS
+name: Release DS920+ 7.0.1-42218 For UNAS
 
 on:
   workflow_dispatch:
