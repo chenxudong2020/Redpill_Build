@@ -61,8 +61,10 @@ jobs:
       - name: 获取项目描述
         id: desc
         run: |
-          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/README.MD -O /home/runner/desc.txt
-          echo "description=$(cat /home/runner/desc.txt)" >> $GITHUB_OUTPUT
+        wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/README.MD -O /home/runner/desc.txt
+        wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/Release.MD -O /home/runner/release.txt
+        echo "description=$(cat /home/runner/desc.txt)" >> $GITHUB_OUTPUT
+        echo "release=$(cat /home/runner/release.txt)" >> $GITHUB_OUTPUT
         
       - name: 环境准备
         run: |
@@ -165,5 +167,6 @@ jobs:
             tag: "v${{steps.version.outputs.maxVersion}}"
             body: |
                 ${{ github.event.head_commit.message }}
-                ${{matrix.platform}} ${{matrix.version}} ${{matrix.machine}}            
+                ${{steps.desc.outputs.release}}
+            replacesArtifacts: true      
 
