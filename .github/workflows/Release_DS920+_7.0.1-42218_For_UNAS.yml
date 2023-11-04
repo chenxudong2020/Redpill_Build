@@ -1,4 +1,4 @@
-name: Build DS920+ 7.0.1-42218 For UNAS_NS202
+name: Release DS920+ 7.0.1-42218 For UNAS
 
 on:
   workflow_dispatch:
@@ -103,10 +103,10 @@ jobs:
                 sudo mv /home/runner/redpill-load/images/*.img ${{ github.workspace }}/unas-imgs
                 sudo ./build-loader.sh clean all
             done
-        - uses: ncipollo/release-action@v1
-          id: release_packages
-          if: env.apps_list != ''
-          with:
+      - uses: ncipollo/release-action@v1
+        id: release_packages
+        if: ${{matrix.machine}} != ''
+        with:
             artifacts: "${{ github.workspace }}/unas-imgs/*.img"
             #bodyFile: "/source/README.md"
             allowUpdates: true
