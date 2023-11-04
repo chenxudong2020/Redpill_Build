@@ -139,30 +139,15 @@ jobs:
         with:
             name: ${{matrix.machine}}-${{matrix.platform}}-${{steps.version.outputs.maxVersion}}-b${{steps.date.outputs.now}}
             path: /home/runner/redpill-load/images
-
       - uses: ncipollo/release-action@v1
-<<<<<<< HEAD
-          id: release_packages
-          if: ${{matrix.machine}} != ''
-          with:
-              artifacts: "${{ github.workspace }}/unas-imgs/*.img"
-              #bodyFile: "/source/README.md"
-              allowUpdates: true
-              generateReleaseNotes: false
-              tag: "v${{ env.today }}"
-              body: |
-                ${{ github.event.head_commit.message }}
-                ${{matrix.platform}} ${{matrix.version}} ${{matrix.machine}}
-=======
         id: release_packages
         if: ${{matrix.machine}} != ''
         with:
-            artifacts: "/home/runner/redpill-load/images/*.img"
+            artifacts: "${{ github.workspace }}/unas-imgs/*.img"
             #bodyFile: "/source/README.md"
             allowUpdates: true
             generateReleaseNotes: false
             tag: "v${{ env.today }}"
             body: |
-              ${{ github.event.head_commit.message }}
-              ${{matrix.platform}} ${{matrix.version}} ${{matrix.machine}}
->>>>>>> 63f9b50fa664c0f44e69ef47f0966a897d10da83
+                ${{ github.event.head_commit.message }}
+                ${{matrix.platform}} ${{matrix.version}} ${{matrix.machine}}
