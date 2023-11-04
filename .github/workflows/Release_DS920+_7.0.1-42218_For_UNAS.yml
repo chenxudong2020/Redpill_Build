@@ -40,9 +40,8 @@ jobs:
       - name: 编译DTB
         run: |
           sudo mkdir -p ${{ github.workspace }}/unas-imgs
-          machinestring="${{matrix.machine}}"
-          arr=($(echo machinestring | sed 's/,/ /g'))
-          for machine in $arr
+          
+          for machine in "${{ matrix.machine }}"
           do
                 #环境处理
                 echo "-------------------------------------------------------"
