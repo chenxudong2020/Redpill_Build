@@ -40,7 +40,7 @@ jobs:
       - name: 编译DTB
         run: |
           sudo mkdir -p ${{ github.workspace }}/unas-imgs
-          for machine in (${{ matrix.machine }})
+          for machine in ("${{ matrix.machine }}")
           do
                 #环境处理
                 echo "-------------------------------------------------------"
