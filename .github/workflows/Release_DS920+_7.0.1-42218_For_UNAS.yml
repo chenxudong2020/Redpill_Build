@@ -30,6 +30,8 @@ jobs:
         run: |
           echo "today=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
           echo "now=$(date +'%s')" >> $GITHUB_OUTPUT
+          machineList="${{ matrix.machine }}"
+          echo "machineList=$machineList" >> "$GITHUB_ENV"
         
       - name: 获取项目描述
         id: desc
@@ -40,7 +42,7 @@ jobs:
       - name: 编译DTB
         run: |
           sudo mkdir -p ${{ github.workspace }}/unas-imgs
-          for machine in ("${{ matrix.machine }}")
+          for machine in ${machineList}
           do
                 #环境处理
                 echo "-------------------------------------------------------"
