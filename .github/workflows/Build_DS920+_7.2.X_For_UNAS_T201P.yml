@@ -96,8 +96,8 @@ jobs:
             ./ext-manager.sh add "${rpext}/addons/boot-wait/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/acpid2/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/early-telnet/rpext-index.json"
-            ./ext-manager.sh add "${rpext}/addons/hdddb/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/nvmevolume/rpext-index.json"
+            ./ext-manager.sh add "${rpext}/addons/hdddb/rpext-index.json"
             ./ext-manager.sh add "${rpext}/addons/wol/rpext-index.json"
             ./ext-manager.sh add "${rpext}/modules/r8125/rpext-index.json"
           
