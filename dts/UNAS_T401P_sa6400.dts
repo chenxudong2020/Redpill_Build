@@ -182,37 +182,38 @@
 		};
 	};
 
-	internal_slot@1 {
-		protocol_type = "sata";
-
-		ahci {
-			pcie_root = "00:12.0";
-			ata_port = <0x00>;
-		};
-	};
-    internal_slot@2 {
-		protocol_type = "sata";
-
-		ahci {
-			pcie_root = "00:12.0";
-			ata_port = <0x01>;
-		};
-	};
-
 	internal_slot@3 {
 		protocol_type = "sata";
 
 		ahci {
-			pcie_root = "00:14.0,00.0";
+			pcie_root = "0000:00:14.0,00.0";
 			ata_port = <0x00>;
 		};
 	};
-    
+
+	internal_slot@2 {
+		protocol_type = "sata";
+
+		ahci {
+			pcie_root = "0000:00:12.0";
+			ata_port = <0x01>;
+		};
+	};
+
+	internal_slot@1 {
+		protocol_type = "sata";
+
+		ahci {
+			pcie_root = "0000:00:12.0";
+			ata_port = <0x00>;
+		};
+	};
+
 	internal_slot@4 {
 		protocol_type = "sata";
 
 		ahci {
-			pcie_root = "00:14.0,00.0";
+			pcie_root = "0000:00:14.0,00.0";
 			ata_port = <0x01>;
 		};
 	};
