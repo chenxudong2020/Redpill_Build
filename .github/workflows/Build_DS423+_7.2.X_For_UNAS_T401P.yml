@@ -84,7 +84,8 @@ jobs:
           cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds423p_user_config.json -O /home/runner/redpill-load/ds423p_user_config.json
            # 切换新内核支持7.2
-          wget https://raw.githubusercontent.com/wjz304/rp-ext/main/lkms/rp-geminilake-4.4.302-prod.ko.gz
+          wget https://github.com/PeterSuh-Q3/redpill-lkm/releases/download/23.6.0/rp-lkms.zip
+          unzip rp-lkms.zip
           gunzip ./rp-geminilake-4.4.302-prod.ko.gz
           mv ./rp-geminilake-4.4.302-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v4.4.302+.ko
           
@@ -107,7 +108,7 @@ jobs:
               if [ ${HTTP_CODE} -ne 200 ]
               then
                 echo "不存在dts文件采用自动dtb补丁支持<=4盘"
-                lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+                lkmext=https://raw.githubusercontent.com/chenxudong2020/rp-ext/master
                 ./ext-manager.sh add ${lkmext}/addons/dtbpatch/rpext-index.json
               else
                 echo "下载DTS文件"
