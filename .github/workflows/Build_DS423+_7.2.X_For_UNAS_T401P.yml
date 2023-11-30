@@ -73,14 +73,13 @@ jobs:
  
 
           # git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
-          cp -rf redpill-load /home/runner/
+            # cp -rf redpill-load /home/runner/
           pushd /home/runner/redpill-load
-          # make config
-          pip install -r requirements.txt
-          python syno.py ${{matrix.platform}} ${{steps.version.outputs.maxVersion}} 1
-          cat config/${{matrix.platform}}/${{steps.version.outputs.maxVersion}}/config.json
+            # make config
+            #  pip install -r requirements.txt
+            #  python syno.py ${{matrix.platform}} ${{steps.version.outputs.maxVersion}} 1
+            #  cat config/${{matrix.platform}}/${{steps.version.outputs.maxVersion}}/config.json
           popd
-          
           cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds423p_user_config.json -O /home/runner/redpill-load/ds423p_user_config.json
            # 切换新内核支持7.2
