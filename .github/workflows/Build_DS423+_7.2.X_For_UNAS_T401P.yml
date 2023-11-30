@@ -91,6 +91,7 @@ jobs:
       - name: 添加扩展驱动
         run: |
             cd /home/runner/redpill-load
+            chmod +x ./ext-manager_t.sh
             ./ext-manager_t.sh add "https://raw.githubusercontent.com/chenxudong2020/rp-ext/main/addons/boot-wait/rpext-index.json"
             ./ext-manager_t.sh add "https://raw.githubusercontent.com/chenxudong2020/rp-ext/main/addons/acpid2/rpext-index.json"
             ./ext-manager_t.sh add "https://raw.githubusercontent.com/chenxudong2020/rp-ext/main/addons/early-telnet/rpext-index.json"
