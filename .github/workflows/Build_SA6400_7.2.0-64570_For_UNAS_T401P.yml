@@ -1,0 +1,108 @@
+name: Build SA6400 7.2.0-64570 For UNAS_T401P
+
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+    inputs:
+      clean_cache:
+        description: 'Clear caches'
+        required: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: 编译 "${{matrix.platform}} ${{matrix.version}} ${{matrix.machine}}"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: SA6400
+            version: 7.2.0-64570
+            machine: UNAS_T401P
+            user: chenxudong2020
+
+    steps:
+      - name: 检出项目文件
+        uses: actions/checkout@v3
+        
+      - name: 获取当前时间
+        id: date
+        run: |
+          echo "today=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+          echo "now=$(date +'%s')" >> $GITHUB_OUTPUT
+        
+      - name: 获取项目描述
+        id: desc
+        run: |
+          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/README.MD -O /home/runner/desc.txt
+          echo "description=$(cat /home/runner/desc.txt)" >> $GITHUB_OUTPUT
+        
+      - name: 环境准备
+        run: |
+          sudo apt-get install -y curl bspatch jq git
+          git clone -b develop https://github.com/pocopico/redpill-load.git /home/runner/redpill-load
+          cp -f type.sh /home/runner/redpill-load
+          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_sa6400_user_config.json -O /home/runner/redpill-load/sa6400_user_config.json
+          # 编译arpl使用的lkm
+          wget https://github.com/chenxudong2020/rp-ext/raw/main/lkms/rp-epyc7002-7.2-5.10.55-prod.ko.gz -o rp-epyc7002-7.2-5.10.55-prod.ko.gz
+          gzip -d rp-epyc7002-7.2-5.10.55-prod.ko.gz
+          mv ./rp-epyc7002-7.2-5.10.55-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v5.10.55.ko
+          
+      - name: 添加扩展驱动
+        run: |
+          cd /home/runner/redpill-load
+          ./ext-manager.sh add 'https://github.com/pocopico/rp-ext/raw/main/redpill-boot-wait/rpext-index.json'
+          ./ext-manager.sh add 'https://github.com/jumkey/redpill-load/raw/develop/redpill-misc/rpext-index.json'
+          ./ext-manager.sh add 'https://github.com/pocopico/redpill-load/raw/develop/redpill-acpid/rpext-index.json'
+          ./ext-manager.sh add 'https://raw.githubusercontent.com/pocopico/rp-ext/master/r8125/rpext-index.json'
+          
+      - name: 编译DTB
+        run: |
+          cd /home/runner/redpill-load
+          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_sa6400.dts
+          HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
+          if [ ${HTTP_CODE} -ne 200 ]
+          then
+                      echo "不存在dts文件采用自动dtb补丁支持<=4盘"
+                      lkmext=https://raw.githubusercontent.com/wjz304/rp-ext/master
+                      ./ext-manager.sh add ${lkmext}/redpill-dtb/rpext-index.json
+                       platform=${{matrix.platform}}
+                       version=${{matrix.version}}
+                       synoplatform=$(echo ${platform,,} | sed 's/+/p/g')
+                       synoversion=$(echo ${version} | awk -F - '{print $2}')
+                       key=${synoplatform}"_"${synoversion}
+                       echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                       echo ${key}
+                      ./ext-manager.sh _update_platform_exts ${key} pocopico.dtb
+          else
+                       echo "加载原DTB驱动"
+                      ./ext-manager.sh add https://raw.githubusercontent.com/pocopico/rp-ext/master/redpill-dtb-static/rpext-index.json
+                      echo "更新原DTB驱动"
+                      ./ext-manager.sh _update_platform_exts sa6400_64570 redpill-dtb-static
+                      echo "下载DTS文件"
+                       wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_sa6400.dts
+                      chmod +x ./redpill-qjs-dtb/src/dtc
+                      echo "编译DTS为DTB"
+                      ./redpill-qjs-dtb/src/dtc -I dts -O dtb -o ./sa6400.dtb ./${{matrix.machine}}_sa6400.dts
+                      echo "cp ./sa6400.dtb /home/runner/redpill-load/custom/extensions/redpill-dtb-static/sa6400_42218/model_sa6400.dtb"
+                      dtbextfile="$(find custom -name model_sa6400.dtb)"
+                      echo "复制编译好的DTB文件 ./sa6400.dtb 到 ${dtbextfile} ..."
+                      sudo cp ./sa6400.dtb ${dtbextfile}
+          fi
+          
+      - name: 编译引导
+        run: |
+          cd /home/runner/redpill-load
+          # 容错
+          chmod +x type.sh && ./type.sh
+          sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
+          sudo BRP_JUN_MOD=1 BRP_DEBUG=1 BRP_USER_CFG=sa6400_user_config.json ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+      - name: 上传固件GitHub
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+            name: ${{matrix.machine}}-${{matrix.platform}}-${{matrix.version}}-b${{steps.date.outputs.now}}
+            path: /home/runner/redpill-load/images
+
