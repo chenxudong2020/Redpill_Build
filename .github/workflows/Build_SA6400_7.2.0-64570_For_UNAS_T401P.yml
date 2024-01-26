@@ -46,7 +46,7 @@ jobs:
           cp -f type.sh /home/runner/redpill-load
           wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_sa6400_user_config.json -O /home/runner/redpill-load/sa6400_user_config.json
           # 编译arpl使用的lkm
-          wget https://github.com/chenxudong2020/rp-ext/raw/main/lkms/rp-epyc7002-7.2-5.10.55-prod.ko.gz -o rp-epyc7002-7.2-5.10.55-prod.ko.gz
+          wget https://github.com/chenxudong2020/rp-ext/raw/main/lkms/rp-epyc7002-7.2-5.10.55-prod.ko.gz
           gzip -d rp-epyc7002-7.2-5.10.55-prod.ko.gz
           mv ./rp-epyc7002-7.2-5.10.55-prod.ko /home/runner/redpill-load/ext/rp-lkm/redpill-linux-v5.10.55.ko
           
