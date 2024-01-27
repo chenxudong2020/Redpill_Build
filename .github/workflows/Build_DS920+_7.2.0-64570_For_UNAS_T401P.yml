@@ -60,21 +60,21 @@ jobs:
           
       - name: 编译DTB
         run: |
-                      cd /home/runner/redpill-load
-                      chkurl= https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
-                       wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
-                       chmod +x ./dtc
-                       echo "编译DTS为DTB"
-                        wget -O ${{matrix.machine}}_ds920p.dts ${chkurl}
-                       ./dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
-                       EXT_PATH="`./ext/dtbstatic/make.sh ./ds920p.dtb`"
-                       if [ -n "${EXT_PATH}" ]; then 
-                             echo "EXT_PATH: ${EXT_PATH}"
-                             ./ext-manager.sh add "${EXT_PATH}"
-                           else
-                             echo "loacl dtbstatic error"
+            cd /home/runner/redpill-load
+            chkurl= https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+            wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
+            chmod +x ./dtc
+            echo "编译DTS为DTB"
+            wget -O ${{matrix.machine}}_ds920p.dts ${chkurl}
+            ./dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
+            EXT_PATH="`./ext/dtbstatic/make.sh ./ds920p.dtb`"
+            if [ -n "${EXT_PATH}" ]; then 
+                echo "EXT_PATH: ${EXT_PATH}"
+                ./ext-manager.sh add "${EXT_PATH}"
+            else
+                echo "loacl dtbstatic error"
                              exit 1
-                       fi
+            fi
           
       - name: 编译引导
         run: |
