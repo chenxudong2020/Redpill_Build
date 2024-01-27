@@ -61,7 +61,7 @@ jobs:
       - name: 编译DTB
         run: |
             cd /home/runner/redpill-load
-            chkurl= https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+            chkurl= https://raw.githubusercontent.com/chenxudong2020/Redpill_Build/master/dts/UNAS_T401P_ds920p.dts
             wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
             chmod +x ./dtc
             echo "编译DTS为DTB"
