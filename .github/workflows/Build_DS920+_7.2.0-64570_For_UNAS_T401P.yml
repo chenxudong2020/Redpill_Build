@@ -56,7 +56,7 @@ jobs:
           ./ext-manager.sh add 'https://raw.githubusercontent.com/chenxudong2020/rp-ext/main/addons/hdddb/rpext-index.json'
           ./ext-manager.sh add 'https://raw.githubusercontent.com/chenxudong2020/rp-ext/main/addons/nvmevolume/rpext-index.json'
           ./ext-manager.sh add 'https://raw.githubusercontent.com/chenxudong2020/rp-ext/main/addons/wol/rpext-index.json'
-          ./ext-manager.sh add 'https://raw.githubusercontent.com/chenxudong2020/rp-ext/main/modules/r8125/geminilake-4.4.302.json'
+          ./ext-manager.sh add 'https://raw.githubusercontent.com/chenxudong2020/rp-ext/main/modules/r8125/rpext-index.json'
           
       - name: 编译DTB
         run: |
